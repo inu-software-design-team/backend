@@ -28,32 +28,41 @@ mongoose
   .catch((err) => console.log("MongoDB connection error:", err));
 
 //db
-const User = require("./models/user");
+const User = require("./models/User");
+const Teacher = require("./models/Teacher");
+const Semester = require("./models/Semester");
+const Class = require("./models/Class");
+const Counseling = require("./models/Counseling");
+const Feedback = require("./models/Feedback");
+const StudentRecord = require("./models/StudentRecord");
 
-// 유저 생성 함수
-const createUser = async () => {
-  try {
-    const newUser = new User({
-      email: "user@example.com",
-      nickname: "유저123",
-      password: "password123",
-      admin: 0,
-      profileImageUrl: "https://example.com/profile.png",
-    });
+// 실행
+//seedDB().catch((err) => console.error(err));
+// // 유저 생성 함수
+// const createUser = async () => {
+//   try {
+//     const newUser = new User({
+//       email: "user@example.com",
+//       nickname: "유저123",
+//       password: "password123",
+//       admin: 0,
+//       profileImageUrl: "https://example.com/profile.png",
+//     });
 
-    const savedUser = await newUser.save();
-    console.log("✅ 유저 생성 완료:", savedUser);
-  } catch (err) {
-    console.error("❌ 유저 생성 실패:", err);
-  } finally {
-    mongoose.connection.close();
-  }
-};
+//     const savedUser = await newUser.save();
+//     console.log("✅ 유저 생성 완료:", savedUser);
+//   } catch (err) {
+//     console.error("❌ 유저 생성 실패:", err);
+//   } finally {
+//     mongoose.connection.close();
+//   }
+// };
 
-// 함수 실행
-createUser();
+// // 함수 실행
+// createUser();
 
 //app.use("/students", stdRouter);
+
 app.listen(port, () => {
   console.log("Server is running on port 3000");
 });
