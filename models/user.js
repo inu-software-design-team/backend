@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Counter = require("./counter"); // 카운터 모델을 import
+const Counter = require("./Counter"); // 카운터 모델을 import
 
 // Mongoose 스키마 및 모델 설정 예제
 /* 
@@ -42,4 +42,4 @@ UserSchema.pre("save", async function (next) {
   }
 });
 
-module.exports = mongoose.model("User", UserSchema);
+module.exports = mongoose.models.User || mongoose.model("User", UserSchema);
