@@ -34,11 +34,11 @@ const User = require("./models/user");
 const createUser = async () => {
   try {
     const newUser = new User({
-      email: "user@example.com",
-      nickname: "유저123",
+      id: 1,
+      identifier: "유저1234",
       password: "password123",
-      admin: 0,
-      profileImageUrl: "https://example.com/profile.png",
+      linked: { something: "wtf" },
+      role: "학생",
     });
 
     const savedUser = await newUser.save();
