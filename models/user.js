@@ -14,7 +14,6 @@ const UserSchema = new mongoose.Schema({
 */
 
 const UserSchema = new mongoose.Schema({
-  id: { type: Number, required: true, unique: true },
   identifier: { type: String, required: true },
   password: { type: String, reuqired: true },
   linked: { type: mongoose.Schema.Types.Mixed, required: true },
