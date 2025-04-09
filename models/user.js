@@ -14,11 +14,12 @@ const UserSchema = new mongoose.Schema({
 */
 
 const UserSchema = new mongoose.Schema({
+  id: { type: Number, required: true, unique: true },
   identifier: { type: String, required: true },
   password: { type: String, reuqired: true },
-  linked: { type: mongoose.Schema.Types.Mixed, required: true },
-  role: { type: String, requird: true }
-})
+  linked: { type: [Number], required: true },
+  role: { type: String, requird: true },
+});
 
 // 사용자 생성 전에 id 필드 설정
 UserSchema.pre("save", async function (next) {

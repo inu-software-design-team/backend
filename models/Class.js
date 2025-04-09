@@ -35,7 +35,7 @@ classSchema.virtual("student", {
   ref: "Student",
   localField: "student_id", // 현재 스키마에서 참조하는 필드
   foreignField: "student_id", // Teacher 테이블의 필드 (기본 _id가 아님!)
-  justOne: false, // 한 명의 학생만 참조
+  justOne: true, // 한 명의 학생만 참조
 });
 
 module.exports = mongoose.models.Class || mongoose.model("Class", classSchema);
