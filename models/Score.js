@@ -1,5 +1,3 @@
-const counter = require("./Counter");
-
 const mongoose = require(mongoose);
 
 const ScoreSchema = new mongoose.Schema({
@@ -13,25 +11,6 @@ const ScoreSchema = new mongoose.Schema({
   math: { type: mongoose.Schema.Types.Mixed, required: true },
   society: { type: mongoose.Schema.Types.Mixed, required: true },
   science: { type: mongoose.Schema.Types.Mixed, required: true },
-});
-
-ScoreSchema.pre("save", async function (next) {
-  if (this.isNew) {
-    try {
-      const counter = await counter.findByIdAndUpdate(
-        { _id: "score_index " },
-        { $inc: { sequence_value: 1 } },
-        { new: true, upsert: true }
-      );
-
-      this.id = counter.sequence_value;
-      next();
-    } catch (error) {
-      next(error);
-    }
-  } else {
-    next();
-  }
 });
 
 module.exports = mongoose.model("Score", ScoreSchema);

@@ -18,17 +18,16 @@ exports.register = async (req, res) => {
     // 비밀번호 해싱
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = null;
+    let newUser = null;
 
-    // 유저 생성
-    if (role == "teacher" || role == "student") {
+    if (role === "teacher" || role === "student") {
       newUser = new User({
         identifier: email,
         password: hashedPassword,
         role: role,
         linked: number[0],
       });
-    } else if (role == "parent") {
+    } else if (role === "parent") {
       newUser = new User({
         identifier: email,
         password: hashedPassword,
@@ -38,9 +37,9 @@ exports.register = async (req, res) => {
     }
 
     await newUser.save();
-
     res.status(201).json({ message: "회원가입 성공!" });
   } catch (error) {
+    console.error("회원가입 에러:", error); // 이거 꼭 추가
     res.status(500).json({ message: "회원가입 실패", error });
   }
 };
@@ -110,37 +109,29 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // 유저 존재 여부 확인
     const user = await User.findOne({ identifier: email });
-    if (!user) {
+    if (!user)
       return res.status(400).json({ message: "존재하지 않는 이메일입니다." });
-    }
 
-    // 비밀번호 비교
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
+    if (!isMatch)
       return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
-    }
 
-    // JWT 토큰 발급 (선택사항)
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      process.env.JWT_SECRET || "your_jwt_secret", // 환경변수에서 비밀키를 가져옴
-      { expiresIn: "7d" } // 7일간 유효
-    );
+    //세션 객체(req.session) 안에 user라는 키를 만들어서, 그 안에 유저 정보를 저장해주는 거야.즉, 세션을 통해 로그인된 유저의 정보를 유지
+    req.session.user = {
+      id: user._id,
+      email: user.identifier,
+      role: user.role,
+      linked: user.linked,
+    };
+    console.log("현재 세션:", req.session);
 
-    // 성공 응답
     res.status(200).json({
-      message: "로그인 성공!",
-      user: {
-        id: user._id,
-        email: user.identifier,
-        role: user.role,
-        linked: user.linked,
-      },
-      token, // 프론트에서 Authorization 헤더로 보낼 수 있음
+      message: "로그인 성공",
+      user: req.session.user,
     });
   } catch (error) {
+    console.error("로그인 오류:", error);
     res.status(500).json({ message: "로그인 실패", error });
   }
 };
