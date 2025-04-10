@@ -12,7 +12,7 @@ const router = express.Router();
 
 router.post("/sign-up", register); //회원가입
 router.get("/check-id", checkId); //역할 검사
-router.post("/login", csrfProtection, login);
+router.post("/login", csrfProtection, login); //로그인
 
 // 토큰 발급용 엔드포인트
 //csrfSecret 이걸 암호화 한 토큰 (세션이랑 짝을 맺음)

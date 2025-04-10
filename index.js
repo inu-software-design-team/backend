@@ -11,6 +11,11 @@ const app = express();
 const port = process.env.PORT || 3000;
 const publicPath = path.resolve(__dirname, "public");
 
+//스웨거 부분
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./swagger/swagger");
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 //db연결
 connectDB();
 
