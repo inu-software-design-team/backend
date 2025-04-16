@@ -21,7 +21,7 @@ connectDB();
 
 const allowedOrigins = [
   process.env.FRONTEND_ORIGIN, // 실제 프론트
-  "http://127.0.0.1:3000", // 혹시 다른 형태로 들어올 경우
+  "http://localhost:3000", // 혹시 다른 형태로 들어올 경우
   "http://localhost", // Thunder Client나 Postman용
   undefined, // origin 없는 요청 허용 (ThunderClient 같은 툴에서 필요함)
 ];

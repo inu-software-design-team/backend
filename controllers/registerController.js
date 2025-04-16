@@ -44,6 +44,7 @@ exports.register = async (req, res) => {
   }
 };
 
+
 //역할검증
 exports.checkId = async (req, res) => {
   try {

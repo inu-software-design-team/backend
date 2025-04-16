@@ -4,12 +4,18 @@ const {
   checkId,
   login,
 } = require("../controllers/registerController");
+const { kakaoLogin, kakaoCallback } = require("../controllers/authController");
 
 const csrf = require("csurf");
 const csrfProtection = csrf();
 
 const router = express.Router();
 
+//auth
+router.get("/kakao/login", kakaoLogin);
+router.get("/kakao/callback", kakaoCallback);
+
+//일반 로그인
 router.post("/sign-up", register); //회원가입
 router.get("/check-id", checkId); //역할 검사
 router.post("/login", csrfProtection, login); //로그인
