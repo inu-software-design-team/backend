@@ -1,4 +1,15 @@
-require("dotenv").config();
+const Sentry = require("@sentry/node");
+const { nodeProfilingIntegration } = require("@sentry/profiling-node");
+
+Sentry.init({
+  dsn: "https://93313ce560f064076b36b2448c8a7c16@o4509178311475200.ingest.de.sentry.io/4509178326548560",
+  integrations: [nodeProfilingIntegration()],
+  tracesSampleRate: 1.0,
+  profileSessionSampleRate: 1.0,
+  profileLifecycle: "trace",
+});
+
+const dotenv = require("dotenv");
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
@@ -7,6 +18,12 @@ const connectDB = require("./config/db");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 
+dotenv.config({
+  path: path.resolve(
+    __dirname,
+    `.env.${process.env.NODE_ENV || "development"}`
+  ),
+});
 const app = express();
 const port = process.env.PORT || 3000;
 const publicPath = path.resolve(__dirname, "public");
@@ -62,6 +79,16 @@ app.use(
 
 // 라우트
 app.use("/api/v1/users", require("./routes/userRoutes"));
+
+Sentry.setupExpressErrorHandler(app);
+
+// Optional fallthrough error handler
+app.use(function onError(err, req, res, next) {
+  res.status(500).json({
+    message: "서버에 문제가 발생했어요. 문의해주세요.",
+    errorId: res.sentry, // Sentry에서 기록된 에러 ID
+  });
+});
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
