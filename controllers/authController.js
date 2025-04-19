@@ -48,6 +48,8 @@ exports.kakaoCallback = async (req, res) => {
     // 3. DB 확인 (회원가입 or 로그인 처리)
     let user = await User.findOne({ kakaoId: kakaoId });
 
+    console.log(kakaoUser);
+
     if (user) {
       req.session.user = {
         id: user._id,

@@ -1,4 +1,4 @@
-require("dotenv").config();
+const dotenv = require("dotenv");
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
@@ -7,6 +7,12 @@ const connectDB = require("./config/db");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 
+dotenv.config({
+  path: path.resolve(
+    __dirname,
+    `.env.${process.env.NODE_ENV || "development"}`
+  ),
+});
 const app = express();
 const port = process.env.PORT || 3000;
 const publicPath = path.resolve(__dirname, "public");
