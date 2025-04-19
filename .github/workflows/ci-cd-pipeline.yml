@@ -1,0 +1,34 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main # 기본 브랜치 (예: main, master)
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # GitHub Actions에서 사용할 환경
+
+    steps:
+      # 1. 레포지토리 코드 체크아웃
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      # 2. Docker Hub에 로그인
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }} # GitHub Secrets에서 가져오기
+          password: ${{ secrets.DOCKER_PASSWORD }} # GitHub Secrets에서 가져오기
+
+      # 3. Docker Buildx 설정
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      # 4. Docker 이미지 빌드 및 푸시
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./backend # backend 디렉토리
+          push: true # 이미지를 Docker Hub로 푸시
+          tags: rlarltn/cosy:latest # Docker Hub의 레포지토리 이름

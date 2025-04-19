@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const axios = require("axios");
+const Sentry = require("@sentry/node");
 
 // 카카오 로그인 URL 제공
 exports.kakaoLogin = (req, res) => {
@@ -65,5 +66,12 @@ exports.kakaoCallback = async (req, res) => {
   } catch (err) {
     console.error("카카오 로그인 에러:", err.response?.data || err);
     res.status(500).json({ message: "카카오 로그인 실패" });
+
+    Sentry.withScope((scope) => {
+      scope.setLevel("error");
+      scope.setTag("type", "api");
+      scope.setTag("api", "auth");
+      Sentry.captureException(err);
+    });
   }
 };

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const Sentry = require("@sentry/node");
 
 const connectDB = async () => {
   try {
@@ -6,7 +7,12 @@ const connectDB = async () => {
     console.log("MongoDB Connected!");
   } catch (error) {
     console.error("DB Connection Failed!", error);
-    process.exit(1);
+    Sentry.withScope((scope) => {
+      scope.setLevel("error");
+      scope.setTag("type", "database");
+      scope.setTag("database", "mongo");
+      Sentry.captureException(error);
+    });
   }
 };
 

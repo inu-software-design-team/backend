@@ -3,6 +3,7 @@ const Teacher = require("../models/Teacher");
 const Student = require("../models/Student");
 const Parent = require("../models/Parent");
 const bcrypt = require("bcryptjs");
+const Sentry = require("@sentry/node");
 
 //회원가입
 exports.register = async (req, res) => {
@@ -41,9 +42,15 @@ exports.register = async (req, res) => {
   } catch (error) {
     console.error("회원가입 에러:", error); // 이거 꼭 추가
     res.status(500).json({ message: "회원가입 실패", error });
+
+    Sentry.withScope((scope) => {
+      scope.setLevel("error");
+      scope.setTag("type", "api");
+      scope.setTag("api", "signup");
+      Sentry.captureException(err);
+    });
   }
 };
-
 
 //역할검증
 exports.checkId = async (req, res) => {
@@ -102,6 +109,12 @@ exports.checkId = async (req, res) => {
   } catch (error) {
     console.error("checkId 오류:", error);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
+    Sentry.withScope((scope) => {
+      scope.setLevel("error");
+      scope.setTag("type", "api");
+      scope.setTag("api", "roleCheck");
+      Sentry.captureException(err);
+    });
   }
 };
 
@@ -134,5 +147,11 @@ exports.login = async (req, res) => {
   } catch (error) {
     console.error("로그인 오류:", error);
     res.status(500).json({ message: "로그인 실패", error });
+    Sentry.withScope((scope) => {
+      scope.setLevel("error");
+      scope.setTag("type", "api");
+      scope.setTag("api", "login");
+      Sentry.captureException(err);
+    });
   }
 };

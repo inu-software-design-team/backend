@@ -12,6 +12,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@sentry/node": "^9.13.0",
+    "@sentry/profiling-node": "^9.13.0",
     "axios": "^1.8.4",
     "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.3",
