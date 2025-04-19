@@ -29,6 +29,6 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
-          context: ./backend # backend 디렉토리
+          context: .
           push: true # 이미지를 Docker Hub로 푸시
           tags: rlarltn/cosy:latest # Docker Hub의 레포지토리 이름
