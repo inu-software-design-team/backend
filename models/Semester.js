@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 // Mongoose 스키마 및 모델 설정 예제
 const semesterSchema = new mongoose.Schema({
-  grade: { type: Number, required: true },
+  year: { type: Number, required }, // 몇 년도
   session: { type: Number, required: true },
 });
 

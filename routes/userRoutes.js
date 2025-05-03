@@ -3,6 +3,7 @@ const {
   register,
   checkId,
   login,
+  mainInfo,
 } = require("../controllers/registerController");
 const { kakaoLogin, kakaoCallback } = require("../controllers/authController");
 
@@ -11,6 +12,7 @@ const csrfProtection = csrf();
 
 const router = express.Router();
 
+// 현재 prefix 경로 /api/v1/users
 //auth
 router.get("/kakao/login", kakaoLogin);
 router.get("/kakao/callback", kakaoCallback);
@@ -19,6 +21,12 @@ router.get("/kakao/callback", kakaoCallback);
 router.post("/sign-up", register); //회원가입
 router.get("/check-id", checkId); //역할 검사
 router.post("/login", csrfProtection, login); //로그인
+
+// 메인 화면(유저 이름)
+router.get("/main", mainInfo);
+
+// 교사 전용 라우팅
+router.use("/teacher", require("./teacherRoutes"));
 
 // 토큰 발급용 엔드포인트
 //csrfSecret 이걸 암호화 한 토큰 (세션이랑 짝을 맺음)
