@@ -18,21 +18,26 @@ exports.checkAll = asyncHandler(async (req, res) => {
   });
 
   // 조회하고자 하는 학급
-  const targetClass = await Class.find({
+  const targetClass = await Class.findOne({
     teacher_id: curteacher.teacher_id,
     year: selYear,
   });
 
   // 학급 학생들 모두 조회
-  let students = [];
+  let students = await Student.find({
+    $or: [
+      { class_id: { $eq: targetClass._id } },
+      { "class_history.class_id": { $in: [targetClass._id] } },
+    ],
+  }).select("name student_id");
 
   return res.status(200).json({
     message: "현재 교사 담당 학급, 학급 학생들, 현재 학기 정보입니다.",
     data: {
       class_id: targetClass._id, // 조회하고자 하는 학급 id(이후 특정 학생 성적 조회에 사용할때 req.body에 담아서 요청해야함)
-      grade: targetClass.grade,
-      class: targetClass.class, // 학년 반
-      studentsList: students, // 학생들의 학번/이름
+      grade: targetClass.grade, // 학년
+      class: targetClass.class, // 반
+      studentsList: students, // 학생들의 objectId/학번/이름
     },
   });
 });

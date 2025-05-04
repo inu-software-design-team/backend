@@ -10,6 +10,25 @@ exports.register = async (req, res) => {
   try {
     const { email, password, role, number } = req.body; //number는 배열값입니다!
 
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(email)) {
+      return res
+        .status(400)
+        .json({ message: "아이디는 유효한 이메일 형식이어야 합니다." });
+    }
+
+    if (typeof password != "string" || password.length < 10) {
+      return res.status(400).json({
+        message: "비밀번호는 10자 이상의 문자열이어야 합니다.",
+      });
+    }
+
+    if (!email || !password || !role || !number) {
+      return res.status(400).json({
+        message: "아이디, 비밀번호, 역할, 고유번호를 모두 입력하세요.",
+      });
+    }
+
     // 이메일 중복 체크
     const existingUser = await User.findOne({ identifier: email });
     if (existingUser) {
@@ -21,7 +40,30 @@ exports.register = async (req, res) => {
 
     let newUser = null;
 
-    if (role === "teacher" || role === "student") {
+    if (role === "teacher") {
+      // 교사 테이블에서 교번으로 먼저 조회
+      const idToCheck = number[0]; // 배열의 0번째 값만 확인
+      const teacher = await Teacher.findOne({ teacher_id: idToCheck });
+      if (teacher == null) {
+        return res
+          .status(400)
+          .json({ message: "해당하는 교사 정보가 없습니다." });
+      }
+      newUser = new User({
+        identifier: email,
+        password: hashedPassword,
+        role: role,
+        linked: number[0],
+      });
+    } else if (role === "student") {
+      // 학생 테이블에서 교번으로 먼저 조회
+      const idToCheck = number[0]; // 배열의 0번째 값만 확인
+      const student = await Student.findOne({ student_id: idToCheck });
+      if (student == null) {
+        return res
+          .status(400)
+          .json({ message: "해당하는 학생 정보가 없습니다." });
+      }
       newUser = new User({
         identifier: email,
         password: hashedPassword,
@@ -29,12 +71,22 @@ exports.register = async (req, res) => {
         linked: number[0],
       });
     } else if (role === "parent") {
+      // 부모 테이블에서 자녀 학번 배열로 먼저 조회
+      const idToCheck = number; // 배열 통째로 조회
+      const parent = await Parent.findOne({ child_id: { $eq: idToCheck } });
+      if (parent == null) {
+        return res
+          .status(400)
+          .json({ message: "해당하는 부모 정보가 없습니다." });
+      }
       newUser = new User({
         identifier: email,
         password: hashedPassword,
         role: role,
         linked: number,
       });
+    } else {
+      return res.status(400).json({ message: "잘못된 회원 타입입니다." });
     }
 
     await newUser.save();
@@ -47,7 +99,7 @@ exports.register = async (req, res) => {
       scope.setLevel("error");
       scope.setTag("type", "api");
       scope.setTag("api", "signup");
-      Sentry.captureException(err);
+      Sentry.captureException(error);
     });
   }
 };
