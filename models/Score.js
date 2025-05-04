@@ -1,4 +1,4 @@
-const mongoose = require(mongoose);
+const mongoose = require("mongoose");
 
 // total_score, avrage 그리고 각 모든 과목들의 성적들은 중간/기말을 구분하기 위해 배열로 저장되어 있음
 const ScoreSchema = new mongoose.Schema({
@@ -26,7 +26,7 @@ ScoreSchema.virtual("class", {
 ScoreSchema.virtual("teacher", {
   ref: "Teacher",
   localField: "teacher_id",
-  foreignFields: "teacher_id",
+  foreignField: "teacher_id",
   justOne: true,
 });
 

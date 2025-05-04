@@ -3,8 +3,6 @@ const Teacher = require("../models/Teacher");
 const Student = require("../models/Student");
 const Class = require("../models/Class");
 const Score = require("../models/Score");
-const Semester = require("../models/Semester");
-
 // 성적/교사 탭 학생 목록 api
 exports.checkAll = asyncHandler(async (req, res) => {
   // 조회하고자 하는 연도
@@ -19,41 +17,14 @@ exports.checkAll = asyncHandler(async (req, res) => {
     teacher_id: req.session.user.linked[0],
   });
 
-  // 해당 선생님이 담당했던 모든 학급 조회
-  const classes = await Class.find({ teacher_id: curteacher.teacher_id });
-
-  // 1/2학기 배열
-  let semesters = [];
-
-  // 조회된 학급들의 first/finalSemester_id를 사용해 1/2학기 조회
-  for (const cls of classes) {
-    // 1학기
-    const first = await Semester.findOne({
-      _id: cls.firstSemester_id,
-      year: selYear,
-      session: 1,
-    });
-    // 2학기
-    const second = await Semester.findOne({
-      _id: cls.secondSemester_id,
-      year: selYear,
-      session: 2,
-    });
-    // 1/2학기 배열에 추가
-    if (first) semesters.push(first);
-    if (second) semesters.push(second);
-  }
-
-  // 조회하고자 하는 연도의 학급
-  const targetClass = await Class.findOne({
-    first_semester_id: semesters[0]._id,
-    second_semester_id: semesters[1]._id,
+  // 조회하고자 하는 학급
+  const targetClass = await Class.find({
+    teacher_id: curteacher.teacher_id,
+    year: selYear,
   });
 
-  // 해당 학급의 모든 학생. 학생들의 학번/이름 받아옴
-  const students = await Student.find({ class_id: targetClass._id }).select(
-    "student_id name"
-  );
+  // 학급 학생들 모두 조회
+  let students = [];
 
   return res.status(200).json({
     message: "현재 교사 담당 학급, 학급 학생들, 현재 학기 정보입니다.",
