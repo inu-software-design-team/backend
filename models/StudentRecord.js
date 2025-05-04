@@ -2,31 +2,38 @@ const mongoose = require("mongoose");
 
 // Mongoose 스키마 및 모델 설정
 const studentRecordSchema = new mongoose.Schema({
-  date: { type: Date, required: true }, // JSON 타입을 Mixed로 지정
-  title: { type: String, required: true },
-  content: { type: String, required: true },
-  attend: { type: Boolean, required: true },
+  // 학급
+  class_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Class",
+    required: true,
+  },
+  // 학생
   student_id: {
     type: Number,
     required: true,
   },
-  teacher_id: {
-    type: Number,
-    required: true,
-  },
-  semester_id: {
-    type: Number,
-    required: true,
-    ref: "Semester", // 학기 테이블(Semester) 참조 (FK)
-  },
+  // 출결
+  attendance_id: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Attendance",
+      required: true,
+    },
+  ],
+  // 특이사항
+  remarks_id: [
+    {
+      remarkd_id: { type: mongoose.Schema.Types.ObjectId, ref: "Remarks" },
+    },
+  ],
 });
 
-// teacher_id가 Teacher 테이블의 teacher_id 필드와 연결되도록 가상 필드 설정
-studentRecordSchema.virtual("teacher", {
-  ref: "Teacher",
-  localField: "teacher_id", // 현재 스키마에서 참조하는 필드
-  foreignField: "teacher_id", // Teacher 테이블의 필드 (기본 _id가 아님!)
-  justOne: true, // 한 명의 교사만 참조
+studentRecordSchema.virtual("Class", {
+  ref: "Class",
+  localField: "class_id",
+  foreignFields: "_id",
+  justOne: true,
 });
 
 studentRecordSchema.virtual("student", {

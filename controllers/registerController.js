@@ -161,15 +161,12 @@ exports.mainInfo = async (req, res) => {
     case "student":
       const student = await Student.findById(req.session.user.linked[0]);
       return res.status(200).json(student.name);
-      break;
     case "teacher":
       const teacher = await Teacher.findById(req.session.user.linked[0]);
       return res.status(200).json(teacher.name);
-      break;
     case "parent":
       const parent = await Parent.findById(req.session.user.linked);
       return res.status(200).json(parent.name);
-      break;
     default:
       return res.status(400).json({ message: "잘못된 접근입니다." });
   }

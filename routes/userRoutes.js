@@ -28,6 +28,10 @@ router.get("/main", mainInfo);
 // 교사 전용 라우팅
 router.use("/teacher", require("./teacherRoutes"));
 
+// 학생 전용 라우팅
+
+// 학부모 전용 라우팅
+
 // 토큰 발급용 엔드포인트
 //csrfSecret 이걸 암호화 한 토큰 (세션이랑 짝을 맺음)
 router.get("/csrf-token", csrfProtection, (req, res) => {
