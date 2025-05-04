@@ -107,14 +107,33 @@ exports.register = async (req, res) => {
 //역할검증
 exports.checkId = async (req, res) => {
   try {
-    const { role, number, name } = req.body;
+    const { role, number, name } = req.body; // Number는 배열이어야 함!!
 
     if (!role || !number || !name) {
       return res
         .status(400)
         .json({ message: "역할, 번호, 이름을 모두 입력해주세요." });
     }
+    // req.body 에서 받아온 number가 배열이 아님
+    if (!Array.isArray(number) || !number.every((n) => typeof n === "number")) {
+      return res.status(400).json({
+        message: "number는 숫자 배열 형식이어야 합니다.",
+      });
+    }
+    // req,body에서 받아온 role이 string이 아님
+    if (typeof role != "string") {
+      return res.status(400).json({
+        message: "role은 string 형식이어야 합니다.",
+      });
+    }
+    // req.body에서 받아온 name이 string이 아님
+    if (typeof name != "string") {
+      return res.status(400).json({
+        message: "name은 string 형식이어야 합니다.",
+      });
+    }
 
+    // 역할 검사
     if (role === "teacher") {
       const idToCheck = number[0]; // 배열의 0번째 값만 확인
       const teacher = await Teacher.findOne({
@@ -145,7 +164,7 @@ exports.checkId = async (req, res) => {
       return res.status(200).json({ message: "학생 인증 성공" });
     } else if (role === "parent") {
       const parent = await Parent.findOne({
-        child: number,
+        child_id: { $eq: number },
       });
 
       if (!parent) {
@@ -165,7 +184,7 @@ exports.checkId = async (req, res) => {
       scope.setLevel("error");
       scope.setTag("type", "api");
       scope.setTag("api", "roleCheck");
-      Sentry.captureException(err);
+      Sentry.captureException(error);
     });
   }
 };
@@ -203,7 +222,7 @@ exports.login = async (req, res) => {
       scope.setLevel("error");
       scope.setTag("type", "api");
       scope.setTag("api", "login");
-      Sentry.captureException(err);
+      Sentry.captureException(error);
     });
   }
 };
