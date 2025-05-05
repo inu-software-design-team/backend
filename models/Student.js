@@ -7,11 +7,16 @@ const StudentSchema = new mongoose.Schema({
   registration_number: { type: String, required: true }, // 주민등록번호
   address: { type: String }, // 주소
   phone: { type: String }, // 연락처처
-  class_id: { type: mongoose.Schema.Types.ObjectId, required: false }, // 학급
+  class_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Class",
+    required: false,
+  }, // 학급
   // 학급 이력
   class_history: [
     {
-      class_id: { type: mongoose.Schema.Types.ObjectId },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Class",
     },
   ],
 });

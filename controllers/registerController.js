@@ -194,6 +194,19 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    const emailRegex = /^\S+@\S+\.\S+$/;
+    if (!emailRegex.test(email)) {
+      return res
+        .status(400)
+        .json({ message: "아이디는 유효한 이메일 형식이어야 합니다." });
+    }
+
+    if (typeof password != "string") {
+      return res.status(400).json({
+        message: "비밀번호는 문자열이어야 합니다.",
+      });
+    }
+
     const user = await User.findOne({ identifier: email });
     if (!user)
       return res.status(400).json({ message: "존재하지 않는 이메일입니다." });

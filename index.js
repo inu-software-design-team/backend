@@ -7,6 +7,7 @@ Sentry.init({
   tracesSampleRate: 0.2,
   profileSessionSampleRate: 0.2,
   profileLifecycle: "trace",
+  debug: true,
   // integrations: [nodeProfilingIntegration()],
   // // tracesSampleRate: 0.1, // 전체 트랜잭션의 10%만 수집
   // tracesSampler: (samplingContext) => {

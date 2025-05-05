@@ -5,10 +5,21 @@ const Class = require("../models/Class");
 const Score = require("../models/Score");
 // 성적/교사 탭 학생 목록 api
 exports.checkAll = asyncHandler(async (req, res) => {
+  // 세션이 존재하지 않음
+  if (!req.session || !req.session.user) {
+    return res
+      .status(400)
+      .json({ message: "세션이 존재하지 않음/로그인 되어있지 않음" });
+  }
+  // 세션 만료됨
+  if (new Date(req.session.cookie.expires) < new Date()) {
+    return res.status(400).json({ message: "세션이 만료됨" });
+  }
+  // 세션 존재 및 유효
   // 조회하고자 하는 연도
   const selYear = req.body.year;
   // 조회 년도 누락 -> 현재 연도로 조회
-  if (selYear == null) {
+  if (!selYear) {
     selYear = 2025;
   }
 
@@ -23,16 +34,20 @@ exports.checkAll = asyncHandler(async (req, res) => {
     year: selYear,
   });
 
+  console.log(targetClass);
+
   // 학급 학생들 모두 조회
   let students = await Student.find({
     $or: [
-      { class_id: { $eq: targetClass._id } },
-      { "class_history.class_id": { $in: [targetClass._id] } },
+      { class_id: targetClass._id },
+      { class_history: { $in: [targetClass._id] } },
     ],
   }).select("name student_id");
 
+  console.log(students);
+
   return res.status(200).json({
-    message: "현재 교사 담당 학급, 학급 학생들, 현재 학기 정보입니다.",
+    message: "현재 교사의 선택한 연도의 학급, 학급 학생들 정보입니다.",
     data: {
       class_id: targetClass._id, // 조회하고자 하는 학급 id(이후 특정 학생 성적 조회에 사용할때 req.body에 담아서 요청해야함)
       grade: targetClass.grade, // 학년
