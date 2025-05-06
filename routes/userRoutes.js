@@ -23,7 +23,7 @@ router.post("/check-id", checkId); // 역할 검사
 router.post("/login", login); // 로그인
 
 // 메인 화면(유저 이름)
-router.get("/main", mainInfo);
+router.get("/dashboard", mainInfo);
 
 // 교사 전용 라우팅
 router.use("/teacher", require("./teacherRoutes"));

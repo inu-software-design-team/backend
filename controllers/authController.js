@@ -58,7 +58,7 @@ exports.kakaoCallback = async (req, res) => {
         linked: user.linked,
       };
       //  리디렉션 (앱으로 딥링크 or 웹 페이지)
-      return res.redirect(`${process.env.FRONTEND_ORIGIN}/main`); // 프론트 페이지 주소
+      return res.redirect(`${process.env.FRONTEND_ORIGIN}/dashboard`); // 프론트 페이지 주소
     } else {
       return res
         .status(400)
