@@ -1,7 +1,6 @@
 const User = require("../models/User");
 const axios = require("axios");
 const Sentry = require("@sentry/node");
-const User = require(".../models/User");
 
 // 카카오 로그인 URL 제공
 exports.kakaoLogin = (req, res) => {
