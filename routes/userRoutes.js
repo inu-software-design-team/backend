@@ -36,7 +36,7 @@ router.use("/teacher", require("./teacherRoutes"));
 //csrfSecret 이걸 암호화 한 토큰 (세션이랑 짝을 맺음)
 router.get("/csrf-token", csrfProtection, (req, res) => {
   console.log("현재 세션:", req.session); // 콘솔에 출력
-  res.json({ csrfToken: req.csrfToken() });
+  return res.json({ csrfToken: req.csrfToken() });
 });
 
 //세션 체크용
