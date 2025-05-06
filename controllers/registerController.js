@@ -28,7 +28,7 @@ exports.register = async (req, res) => {
       });
     }
 
-    if (!email || !address || !role || !number) {
+    if (!email || !address || !role || !linked) {
       return res.status(400).json({
         message: "이메일, 전화번호, 주소를 모두 입력하세요.",
       });
