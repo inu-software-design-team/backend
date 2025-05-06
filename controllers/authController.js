@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const axios = require("axios");
 const Sentry = require("@sentry/node");
+const User = require(".../models/User");
 
 // 카카오 로그인 URL 제공
 exports.kakaoLogin = (req, res) => {
@@ -54,14 +55,15 @@ exports.kakaoCallback = async (req, res) => {
     if (user) {
       req.session.user = {
         id: user._id,
-        email: user.identifier,
         role: user.role,
         linked: user.linked,
       };
       //  리디렉션 (앱으로 딥링크 or 웹 페이지)
-      res.redirect(`${process.env.FRONTEND_ORIGIN}/main`); // 프론트 페이지 주소
+      return res.redirect(`${process.env.FRONTEND_ORIGIN}/main`); // 프론트 페이지 주소
     } else {
-      res.redirect(`${process.env.FRONTEND_ORIGIN}/signUp`); // 프론트 페이지 주소
+      return res
+        .status(400)
+        .json({ message: "회원가입되지 않은 유저입니다.", kakaoId: kakaoId }); // 프론트 페이지 주소
     }
   } catch (err) {
     console.error("카카오 로그인 에러:", err.response?.data || err);

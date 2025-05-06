@@ -2,93 +2,60 @@ const User = require("../models/User");
 const Teacher = require("../models/Teacher");
 const Student = require("../models/Student");
 const Parent = require("../models/Parent");
-const bcrypt = require("bcryptjs");
 const Sentry = require("@sentry/node");
 
-//회원가입
+// 정보입력
 exports.register = async (req, res) => {
   try {
-    const { email, password, role, number } = req.body; //number는 배열값입니다!
+    const { kakaoId, linked, role, email, phone, address } = req.body; //number는 배열값입니다!
 
     const emailRegex = /^\S+@\S+\.\S+$/;
     if (!emailRegex.test(email)) {
       return res
         .status(400)
-        .json({ message: "아이디는 유효한 이메일 형식이어야 합니다." });
+        .json({ message: "유효한 이메일 형식이어야 합니다." });
     }
 
-    if (typeof password != "string" || password.length < 10) {
+    if (typeof phone != "string") {
       return res.status(400).json({
-        message: "비밀번호는 10자 이상의 문자열이어야 합니다.",
+        message: "전화번호는 문자열이어야 합니다.",
       });
     }
 
-    if (!email || !password || !role || !number) {
+    if (typeof adress != "string") {
       return res.status(400).json({
-        message: "아이디, 비밀번호, 역할, 고유번호를 모두 입력하세요.",
+        message: "주소는 문자열이어야 합니다.",
+      });
+    }
+
+    if (!email || !address || !role || !number) {
+      return res.status(400).json({
+        message: "이메일, 전화번호, 주소를 모두 입력하세요.",
       });
     }
 
     // 이메일 중복 체크
-    const existingUser = await User.findOne({ identifier: email });
-    if (existingUser) {
+    const existingEmail = await User.findOne({ identifier: email });
+    if (existingEmail) {
       return res.status(400).json({ message: "이미 가입된 이메일입니다." });
     }
 
-    // 비밀번호 해싱
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // 전화번호 중복 체크
+    const existingPhone = await User.findOne({ phone: phone });
+    if (existingPhone) {
+      return res.status(400).json({ message: "이미 가입된 전화번호입니다." });
+    }
 
     let newUser = null;
 
-    if (role === "teacher") {
-      // 교사 테이블에서 교번으로 먼저 조회
-      const idToCheck = number[0]; // 배열의 0번째 값만 확인
-      const teacher = await Teacher.findOne({ teacher_id: idToCheck });
-      if (teacher == null) {
-        return res
-          .status(400)
-          .json({ message: "해당하는 교사 정보가 없습니다." });
-      }
-      newUser = new User({
-        identifier: email,
-        password: hashedPassword,
-        role: role,
-        linked: number[0],
-      });
-    } else if (role === "student") {
-      // 학생 테이블에서 교번으로 먼저 조회
-      const idToCheck = number[0]; // 배열의 0번째 값만 확인
-      const student = await Student.findOne({ student_id: idToCheck });
-      if (student == null) {
-        return res
-          .status(400)
-          .json({ message: "해당하는 학생 정보가 없습니다." });
-      }
-      newUser = new User({
-        identifier: email,
-        password: hashedPassword,
-        role: role,
-        linked: number[0],
-      });
-    } else if (role === "parent") {
-      // 부모 테이블에서 자녀 학번 배열로 먼저 조회
-      const idToCheck = number; // 배열 통째로 조회
-      const parent = await Parent.findOne({ child_id: { $eq: idToCheck } });
-      if (parent == null) {
-        return res
-          .status(400)
-          .json({ message: "해당하는 부모 정보가 없습니다." });
-      }
-      newUser = new User({
-        identifier: email,
-        password: hashedPassword,
-        role: role,
-        linked: number,
-      });
-    } else {
-      return res.status(400).json({ message: "잘못된 회원 타입입니다." });
-    }
-
+    newUser = new User({
+      kakaoId: kakaoId,
+      linked: linked,
+      role: role,
+      email: email,
+      phone: hashedPassword,
+      address: address,
+    });
     await newUser.save();
     res.status(201).json({ message: "회원가입 성공!" });
   } catch (error) {
@@ -147,7 +114,9 @@ exports.checkId = async (req, res) => {
           .json({ message: "일치하는 교사 정보가 없습니다." });
       }
 
-      return res.status(200).json({ message: "교사 인증 성공" });
+      return res
+        .status(200)
+        .json({ message: "교사 인증 성공", role: "teacher", linked: number });
     } else if (role === "student") {
       const idToCheck = number[0]; // 배열의 0번째 값만 확인
       const student = await Student.findOne({
@@ -161,7 +130,9 @@ exports.checkId = async (req, res) => {
           .json({ message: "일치하는 학생 정보가 없습니다." });
       }
 
-      return res.status(200).json({ message: "학생 인증 성공" });
+      return res
+        .status(200)
+        .json({ message: "학생 인증 성공", role: "student", linked: number });
     } else if (role === "parent") {
       const parent = await Parent.findOne({
         child_id: { $eq: number },
@@ -173,7 +144,9 @@ exports.checkId = async (req, res) => {
           .json({ message: "일치하는 학부모 정보가 없습니다." });
       }
 
-      return res.status(200).json({ message: "학부모 인증 성공" });
+      return res
+        .status(200)
+        .json({ message: "학부모 인증 성공", role: "parent", linked: number });
     } else {
       return res.status(400).json({ message: "잘못된 역할입니다." });
     }
@@ -192,42 +165,26 @@ exports.checkId = async (req, res) => {
 // 로그인
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { kakaoId } = req.body;
 
-    const emailRegex = /^\S+@\S+\.\S+$/;
-    if (!emailRegex.test(email)) {
-      return res
-        .status(400)
-        .json({ message: "아이디는 유효한 이메일 형식이어야 합니다." });
-    }
+    const _user = await User.findOne({ kakaoId });
+    if (_user) {
+      //세션 객체(req.session) 안에 user라는  키를 만들어서, 그 안에 유저 정보를 저장해주는 거야.즉, 세션을 통해 로그인된 유저의 정보를 유지
+      req.session.user = {
+        id: _user._id,
+        role: _user.role,
+        linked: _user.linked,
+      };
 
-    if (typeof password != "string") {
-      return res.status(400).json({
-        message: "비밀번호는 문자열이어야 합니다.",
+      console.log("현재 세션:", req.session);
+
+      return res.status(200).json({
+        message: "로그인 성공",
+        user: req.session.user,
       });
+    } else {
+      return res.status(400).json({ message: "가입되지 않은 유저입니다" });
     }
-
-    const user = await User.findOne({ identifier: email });
-    if (!user)
-      return res.status(400).json({ message: "존재하지 않는 이메일입니다." });
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(401).json({ message: "비밀번호가 일치하지 않습니다." });
-
-    //세션 객체(req.session) 안에 user라는 키를 만들어서, 그 안에 유저 정보를 저장해주는 거야.즉, 세션을 통해 로그인된 유저의 정보를 유지
-    req.session.user = {
-      id: user._id,
-      email: user.identifier,
-      role: user.role,
-      linked: user.linked,
-    };
-    console.log("현재 세션:", req.session);
-
-    res.status(200).json({
-      message: "로그인 성공",
-      user: req.session.user,
-    });
   } catch (error) {
     console.error("로그인 오류:", error);
     res.status(500).json({ message: "로그인 실패", error });

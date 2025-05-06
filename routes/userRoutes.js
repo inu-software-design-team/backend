@@ -18,9 +18,9 @@ router.get("/kakao/login", kakaoLogin);
 router.get("/kakao/callback", kakaoCallback);
 
 //일반 로그인
-router.post("/sign-up", register); //회원가입
-router.post("/check-id", checkId); //역할 검사
-router.post("/login", login); //로그인
+router.post("/sign-up", register); // 정보 입력
+router.post("/check-id", checkId); // 역할 검사
+router.post("/login", login); // 로그인
 
 // 메인 화면(유저 이름)
 router.get("/main", mainInfo);
