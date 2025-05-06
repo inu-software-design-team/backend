@@ -22,7 +22,7 @@ exports.register = async (req, res) => {
       });
     }
 
-    if (typeof adress != "string") {
+    if (typeof address != "string") {
       return res.status(400).json({
         message: "주소는 문자열이어야 합니다.",
       });
@@ -53,7 +53,7 @@ exports.register = async (req, res) => {
       linked: linked,
       role: role,
       email: email,
-      phone: hashedPassword,
+      phone: phone,
       address: address,
     });
     await newUser.save();
