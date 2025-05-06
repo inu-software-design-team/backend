@@ -60,9 +60,9 @@ exports.kakaoCallback = async (req, res) => {
       //  리디렉션 (앱으로 딥링크 or 웹 페이지)
       return res.redirect(`${process.env.FRONTEND_ORIGIN}/dashboard`); // 프론트 페이지 주소
     } else {
-      return res
-        .status(400)
-        .json({ message: "회원가입되지 않은 유저입니다.", kakaoId: kakaoId }); // 프론트 페이지 주소
+      return res.redirect(
+        `${process.env.FRONTEND_ORIGIN}/auth?kakaoId=${kakaoId}`
+      ); // 프론트 페이지 주소
     }
   } catch (err) {
     console.error("카카오 로그인 에러:", err.response?.data || err);

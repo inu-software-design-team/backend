@@ -5,8 +5,6 @@ const StudentSchema = new mongoose.Schema({
   name: { type: String, required: true }, // 이름
   gender: { type: String, required: true }, // 성별
   registration_number: { type: String, required: true }, // 주민등록번호
-  address: { type: String }, // 주소
-  phone: { type: String }, // 연락처처
   class_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Class",
