@@ -2,7 +2,11 @@ const mongoose = require("mongoose");
 
 // total_score, avrage 그리고 각 모든 과목들의 성적들은 중간/기말을 구분하기 위해 배열로 저장되어 있음
 const ScoreSchema = new mongoose.Schema({
-  class_id: { type: Number, ref: "Class", required: true }, // 학급
+  class_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Class",
+    required: true,
+  }, // 학급
   student_id: { type: Number, ref: "Student", required: true }, // 학번
   teacher_id: { type: Number, ref: "Teacher", required: true }, // 교번
   korean: { type: mongoose.Schema.Types.Mixed }, // 국어
@@ -13,7 +17,6 @@ const ScoreSchema = new mongoose.Schema({
   total_score: { type: mongoose.Schema.Types.Mixed }, // 총점
   average: { type: mongoose.Schema.Types.Mixed }, // 평균
   year: { type: Number, required: true }, // 연도
-  semester: { type: Number, required: true }, // 학기
 });
 
 ScoreSchema.virtual("class", {
