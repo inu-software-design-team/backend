@@ -1,5 +1,9 @@
 const express = require("express");
-const { checkAll, checkGrade } = require("../controllers/teacherController");
+const {
+  checkAll,
+  checkGrade,
+  modifyGrade,
+} = require("../controllers/teacherController");
 
 const router = express.Router();
 
@@ -10,4 +14,5 @@ const router = express.Router();
 router.route("/grades").get(checkAll);
 // 선택한 학생의 성적 조회/선택한 학생의 성적 추가/선택한 학생의 성적 수정/선택한 학생의 성적 삭제
 router.route("/grades/:student_id").get(checkGrade);
+router.route("/grades/:student_id").put(modifyGrade);
 module.exports = router;

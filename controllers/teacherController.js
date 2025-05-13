@@ -108,3 +108,38 @@ exports.checkGrade = asyncHandler(async (req, res) => {
     });
   }
 });
+
+exports.modifyGrade = asyncHandler(async (req, res) => {
+  try {
+    const student_id = req.params.student_id;
+    const year = req.body.year;
+    const subject = req.body.subject;
+    const semester = req.body.semester;
+    const term = req.body.term;
+    const score = req.body.score;
+
+    // 해당 연도의 해당 학생 성적
+    const studentGrade = await Score.findOne({
+      student_id: student_id,
+      year: year,
+    });
+
+    studentGrade[subject][semester][term] = score;
+
+    await studentGrade.save();
+    res.status(200).json({
+      message: "성적 수정이 완료되었습니다.",
+      data: studentGrade,
+    });
+  } catch (error) {
+    console.error("학생 성적 수정 오류:", error); // 이거 꼭 추가
+    res.status(500).json({ message: "학생 성적 수정 실패", error });
+
+    Sentry.withScope((scope) => {
+      scope.setLevel("error");
+      scope.setTag("type", "api");
+      scope.setTag("api", "modifyStudentGrade");
+      Sentry.captureException(error);
+    });
+  }
+});
