@@ -123,8 +123,61 @@ exports.modifyGrade = asyncHandler(async (req, res) => {
       student_id: student_id,
       year: year,
     });
-
+    // 성적이 존재하지 않음
+    if (!studentGrade) {
+      return res.status(400).json({
+        message: "해당 연도의 해당 학생 성적이 존재하지 않습니다.",
+      });
+    }
+    if (!studentGrade[subject]) {
+      return res.status(400).json({
+        message: "해당 과목의 성적이 존재하지 않습니다.",
+      });
+    }
+    if (!studentGrade[subject][semester]) {
+      return res.status(400).json({
+        message: "해당 학기의 성적이 존재하지 않습니다.",
+      });
+    }
+    if (!studentGrade[subject][semester][term]) {
+      return res.status(400).json({
+        message: "해당 중간/기말말의 성적이 존재하지 않습니다.",
+      });
+    }
+    // 성적 존재
     studentGrade[subject][semester][term] = score;
+
+    // 과목 리스트
+    const subjects = ["korean", "math", "english", "society", "science"];
+
+    let total = 0;
+    let count = 0;
+
+    for (const subj of subjects) {
+      const subjScore = studentGrade[subj];
+      if (
+        subjScore &&
+        subjScore[semester] &&
+        typeof subjScore[semester][term] === "number"
+      ) {
+        const val = subjScore[semester][term];
+        if (!isNaN(val)) {
+          total += val;
+          count++;
+        }
+      }
+    }
+
+    // 해당 semester + term 기준으로 total_score / average 계산 후 저장
+    if (!studentGrade.total_score) studentGrade.total_score = {};
+    if (!studentGrade.total_score[semester])
+      studentGrade.total_score[semester] = {};
+    studentGrade.total_score[semester][term] = total;
+
+    if (!studentGrade.average) studentGrade.average = {};
+    if (!studentGrade.average[semester]) studentGrade.average[semester] = {};
+    studentGrade.average[semester][term] =
+      count > 0 ? parseFloat((total / count).toFixed(2)) : null;
 
     await studentGrade.save();
     res.status(200).json({
