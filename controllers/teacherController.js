@@ -1,8 +1,10 @@
 const asyncHandler = require("express-async-handler");
+const User = require("../models/User");
 const Teacher = require("../models/Teacher");
 const Student = require("../models/Student");
 const Class = require("../models/Class");
 const Score = require("../models/Score");
+const transporter = require("../config/mailConfig");
 // 성적/교사 탭 학생 목록 api
 exports.checkAll = asyncHandler(async (req, res) => {
   try {
@@ -59,7 +61,7 @@ exports.checkAll = asyncHandler(async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("학생 목록 오류:", error); // 이거 꼭 추가
+    console.error("학생 목록 오류:", error);
     res.status(500).json({ message: "학생 목록 불러오기 실패", error });
 
     Sentry.withScope((scope) => {
@@ -97,7 +99,7 @@ exports.checkGrade = asyncHandler(async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("학생 성적 조회 오류:", error); // 이거 꼭 추가
+    console.error("학생 성적 조회 오류:", error);
     res.status(500).json({ message: "학생 성적 조회 실패", error });
 
     Sentry.withScope((scope) => {
@@ -180,18 +182,101 @@ exports.modifyGrade = asyncHandler(async (req, res) => {
       count > 0 ? parseFloat((total / count).toFixed(2)) : null;
 
     await studentGrade.save();
-    res.status(200).json({
+
+    // 성적 수정 메일 전송
+    // 성적이 수정된 학생 유저/해당 학생의 학부모의 메일 조회
+    const toBeEmail = await User.find({
+      linked: student_id,
+    }).select("email");
+
+    const _student = await Student.findOne({
+      student_id: student_id,
+    }).select("name -_id");
+
+    const semesterNumber = semester === "firstSemester" ? 1 : 2;
+    const koreanterm = term === "midterm" ? "중간" : "기말";
+    const koreanSubject =
+      subject === "korean"
+        ? "국어"
+        : subject === "math"
+        ? "수학"
+        : subject === "english"
+        ? "영어"
+        : subject === "society"
+        ? "사회"
+        : subject === "science"
+        ? "과학"
+        : null;
+
+    const mailOption = {
+      to: toBeEmail,
+      subject: `${_student.name}학생의 ${year}년도 ${semesterNumber}학기 ${koreanterm} ${koreanSubject} 성적 수정이 완료되었습니다.`,
+      text: `안녕하세요, ${_student.name} 학생, ${year}년도 ${semesterNumber}학기 ${koreanterm} ${koreanSubject} 성적이 수정되었습니다.`,
+      html: `<p>안녕하세요, ${_student.name} 학생 </p><p>${year}년도 ${semesterNumber}학기 ${koreanterm} ${koreanSubject} 성적이 수정되었습니다.</p>`,
+    };
+
+    await transporter.sendMail(mailOption);
+
+    return res.status(200).json({
       message: "성적 수정이 완료되었습니다.",
       data: studentGrade,
     });
   } catch (error) {
-    console.error("학생 성적 수정 오류:", error); // 이거 꼭 추가
+    console.error("학생 성적 수정 오류:", error);
     res.status(500).json({ message: "학생 성적 수정 실패", error });
 
     Sentry.withScope((scope) => {
       scope.setLevel("error");
       scope.setTag("type", "api");
       scope.setTag("api", "modifyStudentGrade");
+      Sentry.captureException(error);
+    });
+  }
+});
+
+exports.deleteGrade = asyncHandler(async (req, res) => {
+  try {
+    const student_id = req.params.student_id;
+    const year = req.body.year;
+    const subject = req.body.subject;
+    const semester = req.body.semester;
+    const term = req.body.term;
+
+    // 해당 연도의 해당 학생 성적
+    const studentGrade = await Score.findOne({
+      student_id: student_id,
+      year: year,
+    });
+    // 성적이 존재하지 않음
+    if (!studentGrade) {
+      return res.status(400).json({
+        message: "해당 연도의 해당 학생 성적이 존재하지 않습니다.",
+      });
+    }
+    if (!studentGrade[subject]) {
+      return res.status(400).json({
+        message: "해당 과목의 성적이 존재하지 않습니다.",
+      });
+    }
+    if (!studentGrade[subject][semester]) {
+      return res.status(400).json({
+        message: "해당 학기의 성적이 존재하지 않습니다.",
+      });
+    }
+    if (!studentGrade[subject][semester][term]) {
+      return res.status(400).json({
+        message: "해당 중간/기말말의 성적이 존재하지 않습니다.",
+      });
+    }
+    // 삭제하려는 과목의 학기, 중간/기말 성적 존재
+  } catch (error) {
+    console.error("학생 성적 삭제 오류:", error);
+    res.status(500).json({ message: "학생 성적 삭제 실패", error });
+
+    Sentry.withScope((scope) => {
+      scope.setLevel("error");
+      scope.setTag("type", "api");
+      scope.setTag("api", "deleteStudentGrade");
       Sentry.captureException(error);
     });
   }
