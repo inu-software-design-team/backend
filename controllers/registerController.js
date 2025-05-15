@@ -3,9 +3,10 @@ const Teacher = require("../models/Teacher");
 const Student = require("../models/Student");
 const Parent = require("../models/Parent");
 const Sentry = require("@sentry/node");
+const asyncHandler = require("express-async-handler");
 
 // 정보입력
-exports.register = async (req, res) => {
+exports.register = asyncHandler(async (req, res) => {
   try {
     const { kakaoId, linked, role, email, phone, address } = req.body; //number는 배열값입니다!
 
@@ -69,10 +70,10 @@ exports.register = async (req, res) => {
       Sentry.captureException(error);
     });
   }
-};
+});
 
 //역할검증
-exports.checkId = async (req, res) => {
+exports.checkId = asyncHandler(async (req, res) => {
   try {
     const { role, number, name } = req.body; // Number는 배열이어야 함!!
 
@@ -160,10 +161,10 @@ exports.checkId = async (req, res) => {
       Sentry.captureException(error);
     });
   }
-};
+});
 
 // 로그인
-exports.login = async (req, res) => {
+exports.login = asyncHandler(async (req, res) => {
   try {
     const { kakaoId } = req.body;
 
@@ -195,9 +196,9 @@ exports.login = async (req, res) => {
       Sentry.captureException(error);
     });
   }
-};
+});
 
-exports.mainInfo = async (req, res) => {
+exports.mainInfo = asyncHandler(async (req, res) => {
   switch (req.session.user.role) {
     case "student":
       const student = await Student.findById(req.session.user.linked[0]);
@@ -211,4 +212,4 @@ exports.mainInfo = async (req, res) => {
     default:
       return res.status(400).json({ message: "잘못된 접근입니다." });
   }
-};
+});

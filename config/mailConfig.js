@@ -8,7 +8,7 @@ const transporter = nodemailer.createTransport({
     pass: process.env.PASSWORD,
   },
 });
-// console.log(process.env.EMAIL);
+console.log(process.env.EMAIL);
 transporter.verify((error, success) => {
   if (error) {
     console.log("SMTP 서버 오류: ", error);

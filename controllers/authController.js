@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const axios = require("axios");
 const Sentry = require("@sentry/node");
+const asyncHandler = require("express-async-handler");
 
 // 카카오 로그인 URL 제공
 exports.kakaoLogin = (req, res) => {
@@ -12,7 +13,7 @@ exports.kakaoLogin = (req, res) => {
 };
 
 // 카카오 콜백
-exports.kakaoCallback = async (req, res) => {
+exports.kakaoCallback = asyncHandler(async (req, res) => {
   const code = req.query.code;
 
   try {
@@ -75,4 +76,4 @@ exports.kakaoCallback = async (req, res) => {
       Sentry.captureException(err);
     });
   }
-};
+});
