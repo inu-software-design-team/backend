@@ -43,6 +43,9 @@ studentRecordSchema.virtual("student", {
   justOne: true, // 한 명의 학생만 참조
 });
 
+studentRecordSchema.set("toObject", { virtuals: true });
+studentRecordSchema.set("toJSON", { virtuals: true });
+
 module.exports =
   mongoose.models.StudentRecord ||
   mongoose.model("StudentRecord", studentRecordSchema);

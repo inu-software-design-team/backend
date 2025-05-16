@@ -40,4 +40,6 @@ ScoreSchema.virtual("student", {
   justOne: true,
 });
 
+ScoreSchema.set("toObject", { virtuals: true });
+ScoreSchema.set("toJSON", { virtuals: true });
 module.exports = mongoose.model.Score || mongoose.model("Score", ScoreSchema);
