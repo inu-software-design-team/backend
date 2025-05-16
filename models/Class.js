@@ -17,4 +17,7 @@ classSchema.virtual("teacher", {
   justOne: true, // 한 명의 교사만 참조
 });
 
+classSchema.set("toObject", { virtuals: true });
+classSchema.set("toJSON", { virtuals: true });
+
 module.exports = mongoose.models.Class || mongoose.model("Class", classSchema);
