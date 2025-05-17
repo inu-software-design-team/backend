@@ -32,5 +32,8 @@ FeedbackSchema.virtual("teacher", {
   justOne: true, // 한 명의 교사만 참조
 });
 
+FeedbackSchema.set("toObject", { virtuals: true });
+FeedbackSchema.set("toJSON", { virtuals: true });
+
 module.exports =
   mongoose.models.Feedback || mongoose.model("Feedback", FeedbackSchema);

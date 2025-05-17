@@ -5,6 +5,7 @@ const {
   modifyGrade,
   deleteGrade,
 } = require("../controllers/teacherController");
+const { fetchInformation } = require("../controllers/studentRecordController");
 
 const router = express.Router();
 
@@ -18,4 +19,11 @@ router.route("/grades").get(checkAll);
 router.route("/grades/:student_id").get(checkGrade);
 router.route("/grades/:student_id").put(modifyGrade);
 router.route("/grades/:student_id").delete(deleteGrade); // DELETE HTTP METHOD 동작 안함
+
+
+// 학생부
+// 인적사항
+router.route("/user_information/:student_id").get(fetchInformation).delete();
+
+
 module.exports = router;

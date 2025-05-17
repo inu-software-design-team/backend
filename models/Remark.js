@@ -15,5 +15,8 @@ RemarkSchema.virtual("teacher", {
   justOne: true,
 });
 
+RemarkSchema.set("toObject", { virtuals: true });
+RemarkSchema.set("toJSON", { virtuals: true });
+
 module.exports =
   mongoose.model.Remark || mongoose.model("Remark", RemarkSchema);

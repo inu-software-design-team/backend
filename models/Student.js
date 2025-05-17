@@ -26,5 +26,7 @@ StudentSchema.virtual("class", {
   justOne: true, // 하나의 학급만 참조
 });
 
+StudentSchema.set("toObject", { virtuals: true });
+StudentSchema.set("toJSON", { virtuals: true });
 module.exports =
   mongoose.models.Student || mongoose.model("Student", StudentSchema);

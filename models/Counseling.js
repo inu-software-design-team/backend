@@ -48,5 +48,8 @@ CounselingSchema.virtual("teacher", {
   justOne: true, // 한 명의 교사만 참조
 });
 
+CounselingSchema.set("toObject", { virtuals: true });
+CounselingSchema.set("toJSON", { virtuals: true });
+
 module.exports =
   mongoose.models.Counseling || mongoose.model("Counseling", CounselingSchema);
