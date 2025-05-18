@@ -4,6 +4,7 @@ const {
   checkGrade,
   modifyGrade,
   deleteGrade,
+  createGrade,
 } = require("../controllers/teacherController");
 const { fetchInformation } = require("../controllers/studentRecordController");
 
@@ -18,12 +19,10 @@ router.route("/grades").get(checkAll);
 // 선택한 학생의 성적 조회/선택한 학생의 성적 추가/선택한 학생의 성적 수정/선택한 학생의 성적 삭제
 router.route("/grades/:student_id").get(checkGrade);
 router.route("/grades/:student_id").put(modifyGrade);
-router.route("/grades/:student_id").delete(deleteGrade); // DELETE HTTP METHOD 동작 안함
-
-
+router.route("/grades/:student_id").delete(deleteGrade);
+router.route("/grades/:student_id").post(createGrade);
 // 학생부
 // 인적사항
 router.route("/user_information/:student_id").get(fetchInformation).delete();
-
 
 module.exports = router;
