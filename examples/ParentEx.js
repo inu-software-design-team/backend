@@ -8,9 +8,9 @@ mongoose
   .then(async () => {
     await Parent.insertOne({
       child_id: [2001],
-      name: "김석환",
-      gender: "남자",
-      phone: "010-5612-8878",
-      occupation: "웹개발자",
+      name: "김모지",
+      gender: "여자",
+      phone: "010-5522-8878",
+      occupation: "서버개발자",
     });
   });

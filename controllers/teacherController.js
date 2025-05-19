@@ -5,6 +5,8 @@ const Student = require("../models/Student");
 const Class = require("../models/Class");
 const Score = require("../models/Score");
 const transporter = require("../config/mailConfig");
+const Sentry = require("@sentry/node");
+
 // 성적/교사 탭 학생 목록 api
 exports.checkAll = asyncHandler(async (req, res) => {
   try {

@@ -4,7 +4,19 @@ const {
   checkGrade,
   modifyGrade,
 } = require("../controllers/teacherController");
-const { fetchInformation } = require("../controllers/studentRecordController");
+const {
+  fetchInformation,
+  modifyInformation,
+  modifyName,
+  fetchAttendance,
+  deleteAttendance,
+  addAttendance,
+  patchAttendance,
+  fetchRemark,
+  addRemark,
+  patchRemark,
+  deleteRemark,
+} = require("../controllers/teacherStudentRecordController");
 
 const router = express.Router();
 
@@ -18,8 +30,29 @@ router.route("/grades").get(checkAll);
 router.route("/grades/:student_id").get(checkGrade);
 router.route("/grades/:student_id").put(modifyGrade);
 
-// 학생부
+/* 학생부 */
 // 인적사항
-router.route("/user_information/:student_id").get(fetchInformation).delete();
+router
+  .route("/user_information/:student_id")
+  .get(fetchInformation)
+  .patch(modifyInformation);
+
+//이름 수정
+router.route("/user_information/modify_name/:student_id").patch(modifyName);
+
+// 출석부
+router
+  .route("/user_attendance/:student_id")
+  .get(fetchAttendance)
+  .delete(deleteAttendance)
+  .post(addAttendance)
+  .patch(patchAttendance);
+
+router
+  .route("/user_remark/:student_id")
+  .get(fetchRemark)
+  .post(addRemark)
+  .patch(patchRemark)
+  .delete(deleteRemark);
 
 module.exports = router;
