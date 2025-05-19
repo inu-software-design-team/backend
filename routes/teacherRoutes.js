@@ -7,10 +7,23 @@ const {
   createGrade,
 } = require("../controllers/teacherGradeController");
 const {
+  fetchInformation,
+  modifyInformation,
+  modifyName,
+  fetchAttendance,
+  deleteAttendance,
+  addAttendance,
+  patchAttendance,
+  fetchRemark,
+  addRemark,
+  patchRemark,
+  deleteRemark,
+} = require("../controllers/teacherStudentRecordController");
+
+const {
   checkAllCounseling,
   createCounseling,
 } = require("../controllers/teacherCounselingController");
-const { fetchInformation } = require("../controllers/studentRecordController");
 
 const router = express.Router();
 
@@ -23,13 +36,38 @@ router.route("/grades/:year").get(checkAll);
 // 선택한 학생의 성적 조회/선택한 학생의 성적 추가/선택한 학생의 성적 수정/선택한 학생의 성적 삭제
 router.route("/grades/:student_id/:year").get(checkGrade);
 router.route("/grades/:student_id").put(modifyGrade);
+router.route("/grades/:student_id").delete(deleteGrade); // DELETE HTTP METHOD 동작 안함
+
+/* 학생부 */
 router
   .route("/grades/:student_id/:year/:subject/:semester/:term")
   .delete(deleteGrade);
 router.route("/grades/:student_id").post(createGrade);
+
 // 학생부
 // 인적사항
-router.route("/user_information/:student_id").get(fetchInformation).delete();
+router
+  .route("/user_information/:student_id")
+  .get(fetchInformation)
+  .patch(modifyInformation);
+
+//이름 수정
+router.route("/user_information/modify_name/:student_id").patch(modifyName);
+
+// 출석부
+router
+  .route("/user_attendance/:student_id")
+  .get(fetchAttendance)
+  .delete(deleteAttendance)
+  .post(addAttendance)
+  .patch(patchAttendance);
+
+router
+  .route("/user_remark/:student_id")
+  .get(fetchRemark)
+  .post(addRemark)
+  .patch(patchRemark)
+  .delete(deleteRemark);
 
 // 상담
 

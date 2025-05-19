@@ -24,7 +24,8 @@ const studentRecordSchema = new mongoose.Schema({
   // 특이사항
   remarks_id: [
     {
-      remarkd_id: { type: mongoose.Schema.Types.ObjectId, ref: "Remarks" },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Remark",
     },
   ],
 });
@@ -32,7 +33,7 @@ const studentRecordSchema = new mongoose.Schema({
 studentRecordSchema.virtual("Class", {
   ref: "Class",
   localField: "class_id",
-  foreignFields: "_id",
+  foreignField: "_id",
   justOne: true,
 });
 
