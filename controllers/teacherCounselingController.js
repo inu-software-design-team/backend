@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const Counseling = require("../models/Counseling");
 const Student = require("../models/Student");
+const Class = require("../models/Class");
 
 exports.checkAllCounseling = asyncHandler(async (req, res) => {
   try {
@@ -75,10 +76,9 @@ exports.checkAllCounseling = asyncHandler(async (req, res) => {
   }
 });
 
-/* 
 exports.createCounseling = asyncHandler(async (req, res) => {
   try {
-    const student_id = req.params.user_id;
+    const student_id = req.params.student_id;
     const teacher_id = req.session.user.linked[0];
     const topic = req.body.topic;
     const title = req.body.title;
@@ -86,17 +86,25 @@ exports.createCounseling = asyncHandler(async (req, res) => {
     const next_date = req.body.next_date;
     const next_content = req.body.next_content;
 
-    const date = new Date();
+    const now = new Date();
+    const date = new Date().toISOString().slice(0, 10);
     // 학기 설정
-    const month = date.getMonth() + 1; // 월은 0부터 시작하므로 +1
+    const month = now.getMonth() + 1; // 월은 0부터 시작하므로 +1
     const semester = month <= 6 ? "firstSemester" : "finalSemester";
     // 작성자 교사가 현재 담당하는 학급 조회(상담 대상 학생의 학급)
-    const year = date.getFullYear();
+    const year = now.getFullYear();
     const theClass = await Class.findOne({
       teacher_id: teacher_id,
       year: year,
     });
-
+    // 해당 학급이 존재하지 않음
+    if (!theClass) {
+      return res.status(404).json({
+        message:
+          "학생이 속한, 현재 로그인한 교사가 담당하는 학급이 존재하지 않습니다.",
+      });
+    }
+    // 새로운 상담 생성
     const newCounseling = new Counseling({
       class_id: theClass._id,
       student_id: student_id,
@@ -108,6 +116,13 @@ exports.createCounseling = asyncHandler(async (req, res) => {
       next_date: next_date,
       next_content: next_content,
       semester: semester,
+    });
+
+    await newCounseling.save();
+
+    return res.status(201).json({
+      message: "새로운 상담 내역이 생성되었습니다.",
+      newCounseling,
     });
   } catch (error) {
     console.error("학생 상담 생성 오류:", error);
@@ -121,4 +136,3 @@ exports.createCounseling = asyncHandler(async (req, res) => {
     });
   }
 });
-*/

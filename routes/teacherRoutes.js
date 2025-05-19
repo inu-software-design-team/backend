@@ -8,6 +8,7 @@ const {
 } = require("../controllers/teacherGradeController");
 const {
   checkAllCounseling,
+  createCounseling,
 } = require("../controllers/teacherCounselingController");
 const { fetchInformation } = require("../controllers/studentRecordController");
 
@@ -32,6 +33,6 @@ router.route("/user_information/:student_id").get(fetchInformation).delete();
 
 // 선택한 학생의 상담 내역 조회/새로운 상담 내역 생성
 router.route("/counselings/:student_id").get(checkAllCounseling);
-// router.route("/counselings/:student_id").post(createCounseling);
+router.route("/counselings/:student_id").post(createCounseling);
 
 module.exports = router;
