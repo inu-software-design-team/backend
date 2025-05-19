@@ -29,8 +29,10 @@ router.get("/dashboard", mainInfo);
 router.use("/teacher", require("./teacherRoutes"));
 
 // 학생 전용 라우팅
+router.use("/student", require("./studentRoutes"));
 
 // 학부모 전용 라우팅
+router.use("/parent", require("./parentRoutes"));
 
 // 토큰 발급용 엔드포인트
 //csrfSecret 이걸 암호화 한 토큰 (세션이랑 짝을 맺음)
