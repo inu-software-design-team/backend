@@ -23,6 +23,7 @@ const {
 const {
   checkAllCounseling,
   createCounseling,
+  modifyCounseling,
 } = require("../controllers/teacherCounselingController");
 
 const router = express.Router();
@@ -74,5 +75,6 @@ router
 // 선택한 학생의 상담 내역 조회/새로운 상담 내역 생성
 router.route("/counselings/:student_id").get(checkAllCounseling);
 router.route("/counselings/:student_id").post(createCounseling);
+router.route("/counselings/:student_id/:counseling_id").put(modifyCounseling);
 
 module.exports = router;

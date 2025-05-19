@@ -3,6 +3,7 @@ const Counseling = require("../models/Counseling");
 const Student = require("../models/Student");
 const Class = require("../models/Class");
 const User = require("../models/User");
+const mongoose = require("mongoose");
 const transporter = require("../config/mailConfig");
 
 exports.checkAllCounseling = asyncHandler(async (req, res) => {
@@ -153,6 +154,93 @@ exports.createCounseling = asyncHandler(async (req, res) => {
       scope.setLevel("error");
       scope.setTag("type", "api");
       scope.setTag("api", "createCounseling");
+      Sentry.captureException(error);
+    });
+  }
+});
+
+// 상담 내역 수정
+exports.modifyCounseling = asyncHandler(async (req, res) => {
+  try {
+    const student_id = req.params.student_id;
+    const counseling_id = req.params.counseling_id;
+    // 로그인 된 교사의 교번
+    const teacher_id = req.session.user.linked[0];
+
+    // console.log("현재 로그인 된 교사 교번: ", teacher_id);
+
+    // 학생의 학번이 제공되지 않은 경우
+    if (!student_id) {
+      return res.status(400).json({ message: "학생 학번을 제공해주세요." });
+    }
+
+    // 학생의 학번이 숫자가 아닌 경우
+    if (isNaN(student_id)) {
+      return res
+        .status(400)
+        .json({ message: "학생의 학번은 숫자여야 합니다." });
+    }
+
+    // 상담 내역의 ID가 제공되지 않은 경우
+    if (!counseling_id) {
+      return res.status(400).json({ message: "상담 내역 ID를 제공해주세요." });
+    }
+
+    // 상담 내역의 ID가 유효하지 않은 경우
+    if (!mongoose.Types.ObjectId.isValid(counseling_id)) {
+      return res
+        .status(400)
+        .json({ message: "상담 내역 ID가 유효하지 않습니다." });
+    }
+
+    // 상담 내역 조회
+    const theCounseling = await Counseling.findOne({
+      _id: counseling_id,
+      student_id: student_id,
+    });
+
+    // 상담 내역이 존재하지 않음
+    if (theCounseling == null) {
+      return res
+        .status(404)
+        .json({ message: "상담 내역이 존재하지 않습니다." });
+    }
+
+    // 수정하려는 교사(로그인 된 교사)와 상담 내역 작성자가 다를 경우 수정 불가
+    if (theCounseling.teacher_id !== teacher_id) {
+      return res
+        .status(403)
+        .json({ message: "상담 내역 수정 권한이 없습니다." });
+    }
+
+    // 수정하려는 교사와 상담 내역 작성자가 일치
+    // 상담 내역 수정
+    // 학기 설정
+    const month = new Date().getMonth() + 1; // 월은 0부터 시작하므로 +1
+    const semester = month <= 6 ? "firstSemester" : "finalSemester";
+
+    theCounseling.topic = req.body.topic;
+    theCounseling.title = req.body.title;
+    theCounseling.content = req.body.content;
+    theCounseling.next_date = req.body.next_date;
+    theCounseling.next_content = req.body.next_content;
+    theCounseling.semester = semester;
+
+    await theCounseling.save();
+
+    // 상담 내역 수정 성공
+    res.status(200).json({
+      message: "상담 내역 수정 성공",
+      counseling: theCounseling,
+    });
+  } catch (error) {
+    console.error("학생 상담 수정 오류:", error);
+    res.status(500).json({ message: "학생 상담 수정 실패", error });
+
+    Sentry.withScope((scope) => {
+      scope.setLevel("error");
+      scope.setTag("type", "api");
+      scope.setTag("api", "modifyCounseling");
       Sentry.captureException(error);
     });
   }
