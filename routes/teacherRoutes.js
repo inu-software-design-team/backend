@@ -5,7 +5,7 @@ const {
   modifyGrade,
   deleteGrade,
   createGrade,
-} = require("../controllers/teacherController");
+} = require("../controllers/teacherGradeController");
 const { fetchInformation } = require("../controllers/studentRecordController");
 
 const router = express.Router();

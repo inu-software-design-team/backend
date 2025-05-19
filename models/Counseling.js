@@ -18,7 +18,7 @@ const CounselingSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  date: { type: Date, required: true }, // JSON 타입을 Mixed로 지정. 상담 날짜짜
+  date: { type: Date, required: true }, // JSON 타입을 Mixed로 지정. 상담 날짜
   topic: { type: String, required: true }, // 주제
   title: { type: String, required: true }, // 제목
   content: { type: String, required: true }, // 내용
