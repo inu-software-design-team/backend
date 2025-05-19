@@ -245,3 +245,72 @@ exports.modifyCounseling = asyncHandler(async (req, res) => {
     });
   }
 });
+
+exports.deleteCounseling = asyncHandler(async (req, res) => {
+  try {
+    const student_id = req.params.student_id;
+    const counseling_id = req.params.counseling_id;
+    const teacher_id = req.session.user.linked[0];
+
+    if (!student_id) {
+      return res.status(400).json({ message: "학생 학번을 제공해주세요." });
+    }
+
+    if (isNaN(student_id)) {
+      return res
+        .status(400)
+        .json({ message: "학생의 학번은 숫자여야 합니다." });
+    }
+
+    if (!counseling_id) {
+      return res.status(400).json({ message: "상담 내역 ID를 제공해주세요." });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(counseling_id)) {
+      return res
+        .status(400)
+        .json({ message: "상담 내역 ID가 유효하지 않습니다." });
+    }
+
+    // 상담 내역 조회
+    const theCounseling = await Counseling.findOne({
+      _id: counseling_id,
+      student_id: student_id,
+    });
+
+    // 상담 내역이 존재하지 않음
+    if (theCounseling == null) {
+      return res
+        .status(404)
+        .json({ message: "상담 내역이 존재하지 않습니다." });
+    }
+
+    // 수정하려는 교사(로그인 된 교사)와 상담 내역 작성자가 다를 경우 삭제 불가
+    if (theCounseling.teacher_id !== teacher_id) {
+      return res
+        .status(403)
+        .json({ message: "상담 내역 삭제 권한이 없습니다." });
+    }
+
+    // 상담 내역 삭제
+    await Counseling.deleteOne({
+      _id: counseling_id,
+      student_id: student_id,
+    });
+    // 상담 내역 삭제 성공
+    return res.status(200).json({
+      message: "상담 내역 삭제 성공",
+      counseling_id: counseling_id,
+    });
+  } catch (error) {
+    console.error("학생 상담 삭제 오류:", error);
+    res.status(500).json({ message: "학생 상담 삭제 실패", error });
+
+    Sentry.withScope((scope) => {
+      scope.setLevel("error");
+      scope.setTag("type", "api");
+      scope.setTag("api", "deleteCounseling");
+      Sentry.captureException(error);
+    });
+  }
+});

@@ -24,6 +24,7 @@ const {
   checkAllCounseling,
   createCounseling,
   modifyCounseling,
+  deleteCounseling,
 } = require("../controllers/teacherCounselingController");
 
 const router = express.Router();
@@ -76,5 +77,8 @@ router
 router.route("/counselings/:student_id").get(checkAllCounseling);
 router.route("/counselings/:student_id").post(createCounseling);
 router.route("/counselings/:student_id/:counseling_id").put(modifyCounseling);
+router
+  .route("/counselings/:student_id/:counseling_id")
+  .delete(deleteCounseling);
 
 module.exports = router;
