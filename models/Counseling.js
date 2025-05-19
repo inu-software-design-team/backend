@@ -24,6 +24,7 @@ const CounselingSchema = new mongoose.Schema({
   content: { type: String, required: true }, // 내용
   next_date: { type: Date, required: true }, // 다음 상담 날짜
   next_content: { type: String }, // 다음 상담 게획
+  semester: { type: String, required: true }, // 학기
 });
 
 CounselingSchema.virtual("class", {
