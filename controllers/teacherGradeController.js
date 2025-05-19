@@ -22,7 +22,7 @@ exports.checkAll = asyncHandler(async (req, res) => {
     }
     // 세션 존재 및 유효
     // 조회하고자 하는 연도
-    const selYear = req.body.year;
+    const selYear = req.params.year;
     // 조회 년도 누락 -> 현재 연도로 조회
     if (!selYear) {
       selYear = 2025;
@@ -80,7 +80,7 @@ exports.checkGrade = asyncHandler(async (req, res) => {
   try {
     const student_id = req.params.student_id;
     // 조회하고자 하는 연도
-    const year = req.body.year;
+    const year = req.params.year;
     // 해당 연도의 해당 학생 성적
     const studentGrade = await Score.findOne({
       student_id: student_id,
@@ -257,10 +257,10 @@ exports.modifyGrade = asyncHandler(async (req, res) => {
 exports.deleteGrade = asyncHandler(async (req, res) => {
   try {
     const student_id = req.params.student_id;
-    const year = req.body.year;
-    const subject = req.body.subject;
-    const semester = req.body.semester;
-    const term = req.body.term;
+    const year = req.params.year;
+    const subject = req.params.subject;
+    const semester = req.params.semester;
+    const term = req.params.term;
 
     // 해당 연도의 해당 학생 성적
     const studentGrade = await Score.findOne({
@@ -292,59 +292,81 @@ exports.deleteGrade = asyncHandler(async (req, res) => {
     // 삭제하려는 과목의 학기, 중간/기말 성적 존재
     studentGrade[subject][semester][term] = null;
     studentGrade.markModified(`${subject}.${semester}.${term}`);
-    // 과목 리스트
+
+    // 먼저 저장
+    await studentGrade.save();
+
+    // 그리고 나서 다시 조회
+    const updatedGrade = await Score.findOne({ student_id, year });
+
+    const semesters = ["firstSemester", "lastSemester"];
+    const terms = ["midterm", "finalterm"];
     const subjects = ["korean", "math", "english", "society", "science"];
 
-    let total = 0;
-    let count = 0;
+    for (const sem of semesters) {
+      for (const t of terms) {
+        let total = 0;
+        let count = 0;
 
-    for (const subj of subjects) {
-      const subjScore = studentGrade[subj];
-      if (
-        subjScore &&
-        subjScore[semester] &&
-        typeof subjScore[semester][term] === "number"
-      ) {
-        const val = subjScore[semester][term];
-        if (!isNaN(val)) {
-          total += val;
-          count++;
+        for (const subj of subjects) {
+          const subjScore = updatedGrade[subj];
+          if (
+            subjScore &&
+            subjScore[sem] &&
+            subjScore[sem][t] !== null &&
+            subjScore[sem][t] !== undefined
+          ) {
+            const val = Number(subjScore[sem][t]);
+            if (!isNaN(val)) {
+              total += val;
+              count++;
+            }
+          }
+        }
+
+        if (!updatedGrade.total_score) updatedGrade.total_score = {};
+        if (!updatedGrade.total_score[sem]) updatedGrade.total_score[sem] = {};
+        if (!updatedGrade.average) updatedGrade.average = {};
+        if (!updatedGrade.average[sem]) updatedGrade.average[sem] = {};
+
+        if (count === 0) {
+          updatedGrade.total_score[sem][t] = null;
+          updatedGrade.average[sem][t] = null;
+        } else {
+          updatedGrade.total_score[sem][t] = total;
+          updatedGrade.average[sem][t] = parseFloat((total / count).toFixed(2));
         }
       }
     }
+    updatedGrade.markModified("total_score");
+    updatedGrade.markModified("average");
+    await updatedGrade.save();
 
-    // 해당 semester + term 기준으로 total_score / average 계산 후 저장
-    if (!studentGrade.total_score) studentGrade.total_score = {};
-    if (!studentGrade.total_score[semester])
-      studentGrade.total_score[semester] = {};
-    studentGrade.total_score[semester][term] = total;
+    let gradeObj = await Score.findOne({
+      student_id: student_id,
+      year: year,
+    });
 
-    if (!studentGrade.average) studentGrade.average = {};
-    if (!studentGrade.average[semester]) studentGrade.average[semester] = {};
-    studentGrade.average[semester][term] =
-      count > 0 ? parseFloat((total / count).toFixed(2)) : null;
-    // 성적 저장
-    await studentGrade.save();
     // 저장 전에 모든 성적이 null인지 확인
-    const gradeObj = studentGrade.toObject();
     // 해당 성적 레코드의 모든 값이 null인지 확인하는 헬퍼 함수
-    function isAllScoresNull(gradeObject) {
-      for (const subject of Object.keys(gradeObject)) {
-        if (
-          [
-            "student_id",
-            "year",
-            "_id",
-            "__v",
-            "total_score",
-            "average",
-          ].includes(subject)
-        )
-          continue;
-        const semesters = gradeObject[subject];
-        for (const semester of Object.keys(semesters)) {
+    function isAllScoresNull(gradeDocument) {
+      const ignoredKeys = [
+        "student_id",
+        "teacher_id",
+        "class_id",
+        "year",
+        "_id",
+        "__v",
+        "total_score",
+        "average",
+      ];
+
+      for (const subject of Object.keys(gradeDocument._doc)) {
+        if (ignoredKeys.includes(subject)) continue;
+        const semesters = gradeDocument[subject];
+        for (const semester of Object.keys(semesters || {})) {
           const terms = semesters[semester];
-          for (const term of Object.keys(terms)) {
+          for (const term of Object.keys(terms || {})) {
             if (terms[term] !== null && terms[term] !== undefined) {
               return false;
             }
@@ -353,19 +375,19 @@ exports.deleteGrade = asyncHandler(async (req, res) => {
       }
       return true;
     }
+
     if (isAllScoresNull(gradeObj)) {
-      await Score.deleteOne({ _id: studentGrade._id });
+      const deleted = await Score.findOneAndDelete(gradeObj._id);
+
       return res.status(200).json({
         message:
           "해당 학생의 성적이 모두 null이므로 성적 레코드를 삭제했습니다.",
+        deleted: deleted,
       });
     } else {
-      studentGrade.markModified("total_score");
-      studentGrade.markModified("average");
-      await studentGrade.save();
       return res.status(200).json({
         message: "성적 일부를 null로 수정하였습니다.",
-        data: studentGrade,
+        data: gradeObj,
       });
     }
   } catch (error) {
@@ -376,6 +398,221 @@ exports.deleteGrade = asyncHandler(async (req, res) => {
       scope.setLevel("error");
       scope.setTag("type", "api");
       scope.setTag("api", "deleteStudentGrade");
+      Sentry.captureException(error);
+    });
+  }
+});
+
+exports.createGrade = asyncHandler(async (req, res) => {
+  try {
+    const student_id = req.params.student_id;
+    const year = req.body.year;
+    const semester = req.body.semester;
+    const term = req.body.term;
+    const subject = req.body.subject;
+    const score = req.body.score;
+
+    // 해당 연도의 해당 학생 성적
+    const studentGrade = await Score.findOne({
+      student_id: student_id,
+      year: year,
+    });
+    console.log("studentGrade:", studentGrade);
+    // 성적이 존재하지 않음. 컬렉션 자체를 새로 생성
+    if (!studentGrade) {
+      // 학생 조회
+      const student = await Student.findOne({ student_id: student_id }).select(
+        "class_id class_history"
+      );
+      console.log("student:", student);
+
+      // classId 목록 생성
+      const classIds = [student.class_id, ...(student.class_history || [])];
+      console.log("classIds:", classIds);
+
+      // 조건에 맞는 Class 조회
+      const selclass = await Class.findOne({
+        _id: { $in: classIds },
+        year: year,
+      });
+      console.log("selclass:", selclass);
+      // 새로운 성적 생성
+      let newGrade = new Score({
+        class_id: selclass._id,
+        student_id: student_id,
+        teacher_id: selclass.teacher_id,
+        korean: {
+          firstSemester: { midterm: null, finalterm: null },
+          lastSemester: { midterm: null, finalterm: null },
+        },
+        math: {
+          firstSemester: { midterm: null, finalterm: null },
+          lastSemester: { midterm: null, finalterm: null },
+        },
+        english: {
+          firstSemester: { midterm: null, finalterm: null },
+          lastSemester: { midterm: null, finalterm: null },
+        },
+        society: {
+          firstSemester: { midterm: null, finalterm: null },
+          lastSemester: { midterm: null, finalterm: null },
+        },
+        science: {
+          firstSemester: { midterm: null, finalterm: null },
+          lastSemester: { midterm: null, finalterm: null },
+        },
+        total_score: {
+          firstSemester: { midterm: null, finalterm: null },
+          lastSemester: { midterm: null, finalterm: null },
+        },
+        average: {
+          firstSemester: { midterm: null, finalterm: null },
+          lastSemester: { midterm: null, finalterm: null },
+        },
+        year: year,
+      });
+      await newGrade.save();
+
+      // 성적 입력을 위해 다시 조회
+      const againGrade = await Score.findOne({
+        student_id: student_id,
+        year: year,
+      });
+      // 성적 입력 후 저장
+      againGrade[subject][semester][term] = score;
+      againGrade.markModified(`${subject}.${semester}.${term}`);
+      await againGrade.save();
+
+      // 다시 조회 후 총점/평균 업데이트
+      const _grade = await Score.findOne({
+        student_id: student_id,
+        year: year,
+      });
+
+      // 총점 평균 계산
+      const semesters = ["firstSemester", "lastSemester"];
+      const terms = ["midterm", "finalterm"];
+      const subjects = ["korean", "math", "english", "society", "science"];
+
+      for (const sem of semesters) {
+        for (const t of terms) {
+          let total = 0;
+          let count = 0;
+
+          for (const subj of subjects) {
+            const subjScore = _grade[subj];
+            if (
+              subjScore &&
+              subjScore[sem] &&
+              subjScore[sem][t] !== null &&
+              subjScore[sem][t] !== undefined
+            ) {
+              const val = Number(subjScore[sem][t]);
+              if (!isNaN(val)) {
+                total += val;
+                count++;
+              }
+            }
+          }
+
+          if (!_grade.total_score) _grade.total_score = {};
+          if (!_grade.total_score[sem]) _grade.total_score[sem] = {};
+          if (!_grade.average) _grade.average = {};
+          if (!_grade.average[sem]) _grade.average[sem] = {};
+
+          if (count === 0) {
+            _grade.total_score[sem][t] = null;
+            _grade.average[sem][t] = null;
+          } else {
+            _grade.total_score[sem][t] = total;
+            _grade.average[sem][t] = parseFloat((total / count).toFixed(2));
+          }
+        }
+      }
+      _grade.markModified("total_score");
+      _grade.markModified("average");
+      await _grade.save();
+
+      return res.status(200).json({
+        message: "성적 생성이 완료되었습니다.",
+        data: _grade,
+      });
+    } else {
+      // 성적 컬렉션이 존재함
+      // 생성하고자 하는 과목의 학기, 중간/기말 성적 존재
+      if (studentGrade[subject][semester][term] !== null) {
+        return res.status(400).json({
+          message: "해당 과목의 성적이 이미 존재합니다.",
+        });
+      }
+      // 새로운 성적 생성
+      studentGrade[subject][semester][term] = score;
+      studentGrade.markModified(`${subject}.${semester}.${term}`);
+      await studentGrade.save();
+
+      // 다시 조회 후 총점/평균 업데이트
+      const _grade = await Score.findOne({
+        student_id: student_id,
+        year: year,
+      });
+
+      // 총점 평균 계산
+      const semesters = ["firstSemester", "lastSemester"];
+      const terms = ["midterm", "finalterm"];
+      const subjects = ["korean", "math", "english", "society", "science"];
+
+      for (const sem of semesters) {
+        for (const t of terms) {
+          let total = 0;
+          let count = 0;
+
+          for (const subj of subjects) {
+            const subjScore = _grade[subj];
+            if (
+              subjScore &&
+              subjScore[sem] &&
+              subjScore[sem][t] !== null &&
+              subjScore[sem][t] !== undefined
+            ) {
+              const val = Number(subjScore[sem][t]);
+              if (!isNaN(val)) {
+                total += val;
+                count++;
+              }
+            }
+          }
+
+          if (!_grade.total_score) _grade.total_score = {};
+          if (!_grade.total_score[sem]) _grade.total_score[sem] = {};
+          if (!_grade.average) _grade.average = {};
+          if (!_grade.average[sem]) _grade.average[sem] = {};
+
+          if (count === 0) {
+            _grade.total_score[sem][t] = null;
+            _grade.average[sem][t] = null;
+          } else {
+            _grade.total_score[sem][t] = total;
+            _grade.average[sem][t] = parseFloat((total / count).toFixed(2));
+          }
+        }
+      }
+      _grade.markModified("total_score");
+      _grade.markModified("average");
+      await _grade.save();
+
+      return res.status(200).json({
+        message: "성적 생성이 완료되었습니다.",
+        data: _grade,
+      });
+    }
+  } catch (error) {
+    console.error("학생 성적 생성 오류:", error);
+    res.status(500).json({ message: "학생 성적 생성 실패", error });
+
+    Sentry.withScope((scope) => {
+      scope.setLevel("error");
+      scope.setTag("type", "api");
+      scope.setTag("api", "createStudentGrade");
       Sentry.captureException(error);
     });
   }

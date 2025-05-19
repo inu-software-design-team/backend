@@ -15,6 +15,7 @@ const FeedbackSchema = new mongoose.Schema({
   category: { type: String, required: true }, // 주제
   title: { type: String, required: true }, // 제목
   content: { type: String, required: true }, // 내용
+  semester: { type: String, required: true }, // 학기
 });
 
 FeedbackSchema.virtual("student", {
