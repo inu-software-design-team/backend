@@ -20,7 +20,7 @@ exports.checkAll = asyncHandler(async (req, res) => {
     }
     // 세션 존재 및 유효
     // 조회하고자 하는 연도
-    const selYear = req.body.year;
+    const selYear = req.params.year;
     // 조회 년도 누락 -> 현재 연도로 조회
     if (!selYear) {
       selYear = 2025;
@@ -78,7 +78,7 @@ exports.checkGrade = asyncHandler(async (req, res) => {
   try {
     const student_id = req.params.student_id;
     // 조회하고자 하는 연도
-    const year = req.body.year;
+    const year = req.params.year;
     // 해당 연도의 해당 학생 성적
     const studentGrade = await Score.findOne({
       student_id: student_id,
@@ -255,10 +255,10 @@ exports.modifyGrade = asyncHandler(async (req, res) => {
 exports.deleteGrade = asyncHandler(async (req, res) => {
   try {
     const student_id = req.params.student_id;
-    const year = req.body.year;
-    const subject = req.body.subject;
-    const semester = req.body.semester;
-    const term = req.body.term;
+    const year = req.params.year;
+    const subject = req.params.subject;
+    const semester = req.params.semester;
+    const term = req.params.term;
 
     // 해당 연도의 해당 학생 성적
     const studentGrade = await Score.findOne({
