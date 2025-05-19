@@ -2,6 +2,8 @@ const asyncHandler = require("express-async-handler");
 const Counseling = require("../models/Counseling");
 const Student = require("../models/Student");
 const Class = require("../models/Class");
+const User = require("../models/User");
+const transporter = require("../config/mailConfig");
 
 exports.checkAllCounseling = asyncHandler(async (req, res) => {
   try {
@@ -117,8 +119,27 @@ exports.createCounseling = asyncHandler(async (req, res) => {
       next_content: next_content,
       semester: semester,
     });
-
+    // 상담 내역 저장
     await newCounseling.save();
+
+    // 상담 내역 작성 메일 전송
+    // 새로운 상담 내역이 작성된 학생 유저/해당 학생의 학부모의 메일 조회
+    const toBeEmail = await User.find({
+      linked: student_id,
+    }).select("email");
+
+    const _student = await Student.findOne({
+      student_id: student_id,
+    }).select("name -_id");
+
+    const mailOption = {
+      to: toBeEmail,
+      subject: `${_student.name}학생의 ${topic} 관련 새로운 상담 내역 작성이 완료되었습니다.`,
+      text: `안녕하세요, ${_student.name} 학생, ${topic} 관련 새로운 상담 내역이 작성되었습니다.`,
+      html: `<p>안녕하세요, ${_student.name} 학생 </p><p>${topic} 관련 새로운 상담 내역이 작성되었습니다.</p>`,
+    };
+
+    await transporter.sendMail(mailOption);
 
     return res.status(201).json({
       message: "새로운 상담 내역이 생성되었습니다.",
