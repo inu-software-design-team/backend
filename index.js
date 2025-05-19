@@ -79,7 +79,11 @@ app.use(
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({ mongoUrl: process.env.MONGODB_URL }),
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB_URL,
+      ttl: 60 * 60 * 24 * 7, // 7일 (초 단위)
+      autoRemove: "native", // TTL 인덱스를 사용하여 자동 삭제 (MongoDB 기능)
+    }),
     cookie: {
       httpOnly: true,
       secure: false, // 배포 환경에서는 true (https만 될지)

@@ -33,6 +33,8 @@ exports.checkAll = asyncHandler(async (req, res) => {
       teacher_id: req.session.user.linked[0],
     });
 
+    console.log(req.session.user.linked[0]);
+
     // 조회하고자 하는 학급
     const targetClass = await Class.findOne({
       teacher_id: curteacher.teacher_id,
