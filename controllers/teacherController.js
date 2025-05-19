@@ -145,45 +145,63 @@ exports.modifyGrade = asyncHandler(async (req, res) => {
     }
     if (!studentGrade[subject][semester][term]) {
       return res.status(400).json({
-        message: "해당 중간/기말말의 성적이 존재하지 않습니다.",
+        message: "해당 중간/기말의 성적이 존재하지 않습니다.",
       });
     }
     // 성적 존재
+    // 점수만 수정
     studentGrade[subject][semester][term] = score;
+    studentGrade.markModified(`${subject}.${semester}.${term}`);
+    await studentGrade.save();
 
-    // 과목 리스트
+    // 다시 조회 후 총점/평균 업데이트
+    const updatedGrade = await Score.findOne({
+      student_id: student_id,
+      year: year,
+    });
+
+    const semesters = ["firstSemester", "lastSemester"];
+    const terms = ["midterm", "finalterm"];
     const subjects = ["korean", "math", "english", "society", "science"];
 
-    let total = 0;
-    let count = 0;
+    for (const sem of semesters) {
+      for (const t of terms) {
+        let total = 0;
+        let count = 0;
 
-    for (const subj of subjects) {
-      const subjScore = studentGrade[subj];
-      if (
-        subjScore &&
-        subjScore[semester] &&
-        typeof subjScore[semester][term] === "number"
-      ) {
-        const val = subjScore[semester][term];
-        if (!isNaN(val)) {
-          total += val;
-          count++;
+        for (const subj of subjects) {
+          const subjScore = updatedGrade[subj];
+          if (
+            subjScore &&
+            subjScore[sem] &&
+            subjScore[sem][t] !== null &&
+            subjScore[sem][t] !== undefined
+          ) {
+            const val = Number(subjScore[sem][t]);
+            if (!isNaN(val)) {
+              total += val;
+              count++;
+            }
+          }
+        }
+
+        if (!updatedGrade.total_score) updatedGrade.total_score = {};
+        if (!updatedGrade.total_score[sem]) updatedGrade.total_score[sem] = {};
+        if (!updatedGrade.average) updatedGrade.average = {};
+        if (!updatedGrade.average[sem]) updatedGrade.average[sem] = {};
+
+        if (count === 0) {
+          updatedGrade.total_score[sem][t] = null;
+          updatedGrade.average[sem][t] = null;
+        } else {
+          updatedGrade.total_score[sem][t] = total;
+          updatedGrade.average[sem][t] = parseFloat((total / count).toFixed(2));
         }
       }
     }
-
-    // 해당 semester + term 기준으로 total_score / average 계산 후 저장
-    if (!studentGrade.total_score) studentGrade.total_score = {};
-    if (!studentGrade.total_score[semester])
-      studentGrade.total_score[semester] = {};
-    studentGrade.total_score[semester][term] = total;
-
-    if (!studentGrade.average) studentGrade.average = {};
-    if (!studentGrade.average[semester]) studentGrade.average[semester] = {};
-    studentGrade.average[semester][term] =
-      count > 0 ? parseFloat((total / count).toFixed(2)) : null;
-
-    await studentGrade.save();
+    updatedGrade.markModified("total_score");
+    updatedGrade.markModified("average");
+    await updatedGrade.save();
 
     // 성적 수정 메일 전송
     // 성적이 수정된 학생 유저/해당 학생의 학부모의 메일 조회
@@ -221,7 +239,7 @@ exports.modifyGrade = asyncHandler(async (req, res) => {
 
     return res.status(200).json({
       message: "성적 수정이 완료되었습니다.",
-      data: studentGrade,
+      data: updatedGrade,
     });
   } catch (error) {
     console.error("학생 성적 수정 오류:", error);
@@ -249,6 +267,7 @@ exports.deleteGrade = asyncHandler(async (req, res) => {
       student_id: student_id,
       year: year,
     });
+    console.log(studentGrade);
     // 성적이 존재하지 않음
     if (!studentGrade) {
       return res.status(400).json({
@@ -267,10 +286,88 @@ exports.deleteGrade = asyncHandler(async (req, res) => {
     }
     if (!studentGrade[subject][semester][term]) {
       return res.status(400).json({
-        message: "해당 중간/기말말의 성적이 존재하지 않습니다.",
+        message: "해당 중간/기말의 성적이 존재하지 않습니다.",
       });
     }
     // 삭제하려는 과목의 학기, 중간/기말 성적 존재
+    studentGrade[subject][semester][term] = null;
+    studentGrade.markModified(`${subject}.${semester}.${term}`);
+    // 과목 리스트
+    const subjects = ["korean", "math", "english", "society", "science"];
+
+    let total = 0;
+    let count = 0;
+
+    for (const subj of subjects) {
+      const subjScore = studentGrade[subj];
+      if (
+        subjScore &&
+        subjScore[semester] &&
+        typeof subjScore[semester][term] === "number"
+      ) {
+        const val = subjScore[semester][term];
+        if (!isNaN(val)) {
+          total += val;
+          count++;
+        }
+      }
+    }
+
+    // 해당 semester + term 기준으로 total_score / average 계산 후 저장
+    if (!studentGrade.total_score) studentGrade.total_score = {};
+    if (!studentGrade.total_score[semester])
+      studentGrade.total_score[semester] = {};
+    studentGrade.total_score[semester][term] = total;
+
+    if (!studentGrade.average) studentGrade.average = {};
+    if (!studentGrade.average[semester]) studentGrade.average[semester] = {};
+    studentGrade.average[semester][term] =
+      count > 0 ? parseFloat((total / count).toFixed(2)) : null;
+    // 성적 저장
+    await studentGrade.save();
+    // 저장 전에 모든 성적이 null인지 확인
+    const gradeObj = studentGrade.toObject();
+    // 해당 성적 레코드의 모든 값이 null인지 확인하는 헬퍼 함수
+    function isAllScoresNull(gradeObject) {
+      for (const subject of Object.keys(gradeObject)) {
+        if (
+          [
+            "student_id",
+            "year",
+            "_id",
+            "__v",
+            "total_score",
+            "average",
+          ].includes(subject)
+        )
+          continue;
+        const semesters = gradeObject[subject];
+        for (const semester of Object.keys(semesters)) {
+          const terms = semesters[semester];
+          for (const term of Object.keys(terms)) {
+            if (terms[term] !== null && terms[term] !== undefined) {
+              return false;
+            }
+          }
+        }
+      }
+      return true;
+    }
+    if (isAllScoresNull(gradeObj)) {
+      await Score.deleteOne({ _id: studentGrade._id });
+      return res.status(200).json({
+        message:
+          "해당 학생의 성적이 모두 null이므로 성적 레코드를 삭제했습니다.",
+      });
+    } else {
+      studentGrade.markModified("total_score");
+      studentGrade.markModified("average");
+      await studentGrade.save();
+      return res.status(200).json({
+        message: "성적 일부를 null로 수정하였습니다.",
+        data: studentGrade,
+      });
+    }
   } catch (error) {
     console.error("학생 성적 삭제 오류:", error);
     res.status(500).json({ message: "학생 성적 삭제 실패", error });

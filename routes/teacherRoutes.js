@@ -3,6 +3,7 @@ const {
   checkAll,
   checkGrade,
   modifyGrade,
+  deleteGrade,
 } = require("../controllers/teacherController");
 const {
   fetchInformation,
@@ -29,6 +30,8 @@ router.route("/grades").get(checkAll);
 // 선택한 학생의 성적 조회/선택한 학생의 성적 추가/선택한 학생의 성적 수정/선택한 학생의 성적 삭제
 router.route("/grades/:student_id").get(checkGrade);
 router.route("/grades/:student_id").put(modifyGrade);
+router.route("/grades/:student_id").delete(deleteGrade); // DELETE HTTP METHOD 동작 안함
+
 
 /* 학생부 */
 // 인적사항
@@ -54,5 +57,6 @@ router
   .post(addRemark)
   .patch(patchRemark)
   .delete(deleteRemark);
+
 
 module.exports = router;
