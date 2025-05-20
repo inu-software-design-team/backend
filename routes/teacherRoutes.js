@@ -34,6 +34,7 @@ const {
 
 const {
   checkAllFeedback,
+  modifyFeedback,
 } = require("../controllers/teacherFeedbackController");
 
 const router = express.Router();
@@ -98,5 +99,6 @@ router
 // 피드백
 // 선택한 학생의 피드백 내역 조회/새로운 피드백 내역 생성/피드백 내역 수정(작성자와 수정자의 교번이 일치할 때만 가능)/피드백 내역 삭제(작성자와 삭제자의 교번이 일치할 때만 가능)
 router.route("/feedback/:student_id").get(checkAllFeedback);
+router.route("/feedback/:student_id/:feedback_id").put(modifyFeedback);
 
 module.exports = router;
