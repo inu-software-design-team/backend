@@ -11,6 +11,12 @@ const FeedbackSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  // 학급
+  class_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Class",
+    required: true,
+  },
   date: { type: Date, required: true }, // JSON 타입을 Mixed로 지정. 피드백 날짜
   category: { type: String, required: true }, // 주제
   title: { type: String, required: true }, // 제목
@@ -31,6 +37,13 @@ FeedbackSchema.virtual("teacher", {
   localField: "teacher_id", // 현재 스키마에서 참조하는 필드
   foreignField: "teacher_id", // Teacher 테이블의 필드 (기본 _id가 아님!)
   justOne: true, // 한 명의 교사만 참조
+});
+
+FeedbackSchema.virtual("class", {
+  ref: "Class",
+  localField: "class_id",
+  foreignField: "_id",
+  justOne: true,
 });
 
 FeedbackSchema.set("toObject", { virtuals: true });

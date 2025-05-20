@@ -32,6 +32,10 @@ const {
   deleteCounseling,
 } = require("../controllers/teacherCounselingController");
 
+const {
+  checkAllFeedback,
+} = require("../controllers/teacherFeedbackController");
+
 const router = express.Router();
 
 // 학생 목록
@@ -83,13 +87,16 @@ router
   .delete(deleteRemark);
 
 // 상담
-
-// 선택한 학생의 상담 내역 조회/새로운 상담 내역 생성
+// 선택한 학생의 상담 내역 조회/새로운 상담 내역 생성/상담 내역 수정(작성자와 수정자의 교번이 일치할 때만 가능)/상담 내역 삭제(작성자와 삭제자의 교번이 일치할 때만 가능)
 router.route("/counselings/:student_id").get(checkAllCounseling);
 router.route("/counselings/:student_id").post(createCounseling);
 router.route("/counselings/:student_id/:counseling_id").put(modifyCounseling);
 router
   .route("/counselings/:student_id/:counseling_id")
   .delete(deleteCounseling);
+
+// 피드백
+// 선택한 학생의 피드백 내역 조회/새로운 피드백 내역 생성/피드백 내역 수정(작성자와 수정자의 교번이 일치할 때만 가능)/피드백 내역 삭제(작성자와 삭제자의 교번이 일치할 때만 가능)
+router.route("/feedback/:student_id").get(checkAllFeedback);
 
 module.exports = router;
