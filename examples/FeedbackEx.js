@@ -32,7 +32,7 @@ mongoose
 
     await Feedback.insertOne({
       student_id: 2001,
-      teacher_id: 1001,
+      teacher_id: 1002,
       class_id: new mongoose.Types.ObjectId("68176e5d84223682274493b7"),
       date: new Date("2024-05-10"),
       category: "태도",
