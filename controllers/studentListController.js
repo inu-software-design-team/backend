@@ -9,10 +9,7 @@ exports.selectYear = asyncHandler(async (req, res) => {
     const teacher_id = req.session.user.linked[0];
 
     // 해당 교사가 맡았던 학급들 모두 조회 후 연도 목록 추출
-    const classes = await Class.find({ teacher_id: teacher_id })
-      .select("year")
-      .distinct("year");
-    // console.log("연도 목록: ", classes);
+    const classes = await Class.distinct("year", { teacher_id: teacher_id });
 
     return res.status(200).json({
       message: "학생 목록 탭 연도 선택지입니다.",
