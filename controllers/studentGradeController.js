@@ -8,7 +8,7 @@ const Score = require("../models/Score");
 const transporter = require("../config/mailConfig");
 const Sentry = require("@sentry/node");
 
-// 학부모 탭 학생 목록 api
+// 학생 탭 학생 목록 api
 exports.checkAll = asyncHandler(async (req, res) => {
   try {
     // 세션이 존재하지 않음
@@ -24,16 +24,20 @@ exports.checkAll = asyncHandler(async (req, res) => {
 
     const linkedIds = req.session.user.linked; // 예: [2001]
 
-    const students = await Student.find({
-      student_id: { $in: linkedIds },
-    }).populate("class_id"); // 필요한 필드만
+    if (!linkedIds || linkedIds.length === 0) {
+      return res.status(400).json({ message: "연결된 학생 ID가 없습니다." });
+    }
 
-    console.log(students);
+    const student = await Student.findOne({
+      student_id: linkedIds[0],
+    }).populate("class_id");
+
+    console.log(student);
 
     return res.status(200).json({
-      message: "현재 학부모의 학급 학생들 정보입니다.",
+      message: "현재 학생의 학급 학생들 정보입니다.",
       data: {
-        studentsList: students, // 학생들의 objectId/학번/이름
+        studentsList: student, // 학생들의 objectId/학번/이름
       },
     });
   } catch (error) {
@@ -43,7 +47,7 @@ exports.checkAll = asyncHandler(async (req, res) => {
     Sentry.withScope((scope) => {
       scope.setLevel("error");
       scope.setTag("type", "api");
-      scope.setTag("api", "checkAllStudents");
+      scope.setTag("api", "checkStudent");
       Sentry.captureException(error);
     });
   }
@@ -96,9 +100,8 @@ exports.selectYearForGrade = asyncHandler(async (req, res) => {
   }
 });
 
-// 성적/학부모 탭 특정 학생 성적 조회 api
+//학생 탭 특정 학생 성적 조회 api
 exports.checkGrade = asyncHandler(async (req, res) => {
-  console.log("sdfdf");
   try {
     const student_id = req.params.student_id;
     // 조회하고자 하는 연도
