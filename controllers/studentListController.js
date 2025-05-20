@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const Class = require("../models/Class");
 const Student = require("../models/Student");
 const Teacher = require("../models/Teacher");
+const Sentry = require("@sentry/node");
 
 // 학생 목록 탭 연도 선택지 api
 exports.selectYear = asyncHandler(async (req, res) => {

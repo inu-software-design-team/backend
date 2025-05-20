@@ -5,6 +5,7 @@ const Class = require("../models/Class");
 const User = require("../models/User");
 const mongoose = require("mongoose");
 const transporter = require("../config/mailConfig");
+const Sentry = require("@sentry/node");
 
 exports.checkAllCounseling = asyncHandler(async (req, res) => {
   try {
