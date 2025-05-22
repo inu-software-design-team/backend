@@ -352,7 +352,7 @@ exports.fetchRemark = asyncHandler(async (req, res) => {
       path: "remarks_id",
       populate: {
         path: "teacher",
-        select: "name -_id",
+        select: "name subject -_id -teacher_id",
       },
     });
 
