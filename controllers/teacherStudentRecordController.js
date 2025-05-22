@@ -112,8 +112,6 @@ exports.modifyInformation = asyncHandler(async (req, res) => {
     //   return res.status(404).json({ message: "학생을 찾을 수 없습니다." });
     // }
 
-    console.log(user);
-
     // 주소와 휴대폰 번호 수정
     if (user && address !== undefined) {
       user.address = address;
@@ -122,6 +120,8 @@ exports.modifyInformation = asyncHandler(async (req, res) => {
     }
 
     await student.save();
+
+    console.log(user);
 
     res
       .status(200)
@@ -349,7 +349,11 @@ exports.fetchRemark = asyncHandler(async (req, res) => {
     const remark = await StudentRecord.findOne({
       student_id: studentId,
     }).populate({
-      path: "remarks_id", // 1단계: attendance 문서
+      path: "remarks_id",
+      populate: {
+        path: "teacher",
+        select: "name -_id",
+      },
     });
 
     if (!remark) {

@@ -36,7 +36,14 @@ exports.checkAllCounseling = asyncHandler(async (req, res) => {
         path: "teacher",
         select: "name",
       });
+    // console.log("상담 내역:", allCounseling);
 
+    // 상담 내역이 존재하지 않을 경우
+    if (!allCounseling || allCounseling.length === 0) {
+      return res.status(404).json({ message: "상담 내역이 없습니다." });
+    }
+    // 상담 내역이 존재할 경우
+    // 상담 내역을 가공하여 필요한 정보만 추출
     const refinedCounselingList = allCounseling.map((item) => ({
       _id: item._id,
       class_id: item.class_id,

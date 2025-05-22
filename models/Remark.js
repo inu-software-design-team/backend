@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const RemarkSchema = new mongoose.Schema({
-  topic: { type: String, required: true }, // 주제
+  subject: { type: String, required: true }, // 주제
   title: { type: String, required: true }, // 제목
   content: { type: String, required: true }, // 내용
   date: { type: mongoose.Schema.Types.Mixed, required: true }, // 날짜
