@@ -398,8 +398,10 @@ exports.fetchRemark = asyncHandler(async (req, res) => {
 // 특기사항 추가
 exports.addRemark = asyncHandler(async (req, res) => {
   const studentId = req.params.student_id;
+  const teacher_id = req.session.user.linked[0];
   const remarkInformation = req.body;
   // 날짜 형식을 ISO 형식으로 변환
+  remarkInformation.teacher_id = teacher_id;
   if (remarkInformation.date) {
     remarkInformation.date = new Date(remarkInformation.date); // → Date 객체로 변환됨
   }
@@ -440,8 +442,10 @@ exports.addRemark = asyncHandler(async (req, res) => {
 // 특기사항 수정
 exports.patchRemark = asyncHandler(async (req, res) => {
   const remarkId = req.params.student_id;
+  const teacher_id = req.session.user.linked[0];
   const updatedData = req.body;
   // 날짜 형식을 ISO 형식으로 변환
+  updatedData.teacher_id = teacher_id;
   if (updatedData.date) {
     updatedData.date = new Date(updatedData.date); // → Date 객체로 변환됨
   }
