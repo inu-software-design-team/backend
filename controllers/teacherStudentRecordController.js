@@ -367,7 +367,16 @@ exports.fetchRemark = asyncHandler(async (req, res) => {
     // 응답 데이터 구성
     const responseData = {
       student_id: remark.student_id,
-      remarks: remark.remarks_id,
+      remarks: remark.remarks_id.map((r) => ({
+        _id: r._id,
+        subject: r.subject,
+        title: r.title,
+        content: r.content,
+        date: r.date,
+        teacher_id: r.teacher_id,
+        teacher_name: r.teacher?.name || null,
+        teacher_subject: r.teacher?.subject || null,
+      })),
     };
 
     console.log(responseData);
