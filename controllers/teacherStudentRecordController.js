@@ -348,13 +348,15 @@ exports.fetchRemark = asyncHandler(async (req, res) => {
     //연결된 학생 특이사항 찾기
     const remark = await StudentRecord.findOne({
       student_id: studentId,
-    }).populate({
-      path: "remarks_id",
-      populate: {
-        path: "teacher",
-        select: "name subject -_id -teacher_id",
-      },
-    });
+    })
+      .populate({
+        path: "remarks_id",
+        populate: {
+          path: "teacher",
+          select: "name subject -_id -teacher_id",
+        },
+      })
+      .lean();
 
     if (!remark) {
       return res
