@@ -400,6 +400,12 @@ exports.addRemark = asyncHandler(async (req, res) => {
   const studentId = req.params.student_id;
   const teacher_id = req.session.user.linked[0];
   const remarkInformation = req.body;
+
+  // 작성자 과목 설정
+  const teacher_subject = await Teacher.findOne({ teacher_id }).select(
+    "subject"
+  );
+  remarkInformation.subject = teacher_subject.subject;
   // 날짜 형식을 ISO 형식으로 변환
   remarkInformation.teacher_id = teacher_id;
   if (remarkInformation.date) {
@@ -444,6 +450,12 @@ exports.patchRemark = asyncHandler(async (req, res) => {
   const remarkId = req.params.student_id;
   const teacher_id = req.session.user.linked[0];
   const updatedData = req.body;
+
+  // 작성자 과목 설정
+  const teacher_subject = await Teacher.findOne({ teacher_id }).select(
+    "subject"
+  );
+  updatedData.subject = teacher_subject.subject;
   // 날짜 형식을 ISO 형식으로 변환
   updatedData.teacher_id = teacher_id;
   if (updatedData.date) {
