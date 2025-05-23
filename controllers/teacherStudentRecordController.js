@@ -27,6 +27,11 @@ exports.fetchInformation = asyncHandler(async (req, res) => {
       },
     });
 
+    // 로그인 된 교사의 담당 과목
+    const teacher_subject = await Teacher.findOne({ teacher_id }).select(
+      "subject"
+    );
+
     // 연결된 사용자(학생 역할)를 찾기
     const user = await User.findOne({
       linked: studentId,
@@ -59,6 +64,7 @@ exports.fetchInformation = asyncHandler(async (req, res) => {
         phone: p.phone,
         occupation: p.occupation,
       })),
+      teacher_subject: teacher_subject,
     };
 
     // 유저 정보가 있으면 address와 phone 추가
