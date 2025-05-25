@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>출석 현황 보고서</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f7f6;
+        color: #333;
+        -webkit-print-color-adjust: exact; /* Chrome, Safari, Edge */
+        color-adjust: exact; /* Firefox */
+      }
+      .container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 30px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+      header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #4a90e2;
+      }
+      header h1 {
+        font-size: 28px;
+        color: #2c3e50;
+        margin: 0 0 5px 0;
+      }
+      .student-info {
+        margin-bottom: 30px;
+        padding: 20px;
+        background-color: #e9f3fd;
+        border-left: 5px solid #4a90e2;
+        border-radius: 0 6px 6px 0;
+      }
+      .student-info table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .student-info td {
+        padding: 8px 0;
+        font-size: 15px;
+        vertical-align: top;
+      }
+      .student-info strong {
+        color: #34495e;
+        margin-right: 10px;
+        min-width: 70px;
+        display: inline-block;
+      }
+      .section-title {
+        font-size: 22px;
+        color: #4a90e2;
+        margin-top: 30px;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #ddd;
+      }
+      .no-data {
+        color: #95a5a6;
+        font-style: italic;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        font-size: 12px;
+        color: #7f8c8d;
+      }
+
+      /* Styles for Attendance Records */
+      .attendance-record {
+        margin-bottom: 15px;
+        padding: 12px 15px;
+        border: 1px solid #e0e0e0;
+        border-left-width: 5px;
+        border-left-color: #e0e0e0; /* Default left border color, overridden by specific state */
+        border-radius: 4px;
+        background-color: #f9f9f9;
+      }
+      /* State-specific left border colors */
+      .attendance-record-결석 {
+        border-left-color: #dc3545;
+      }
+      .attendance-record-조퇴 {
+        border-left-color: #fd7e14;
+      }
+      .attendance-record-지각 {
+        border-left-color: #ffc107;
+      }
+      .attendance-record-병결 {
+        border-left-color: #20c997;
+      } /* Teal for greenish feel */
+      .attendance-record-공결 {
+        border-left-color: #28a745;
+      } /* Green for greenish feel */
+      /* Add more states as needed, e.g., .attendance-record-출석 { border-left-color: #28a745; } */
+
+      .attendance-record p {
+        margin: 8px 0;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .attendance-record strong {
+        color: #333;
+        font-weight: 600;
+        margin-right: 8px;
+        display: inline-block;
+        min-width: 65px; /* 레이블 정렬 */
+      }
+      .attendance-record .reason-value {
+        white-space: pre-wrap; /* 사유가 길 경우 줄바꿈 허용 */
+      }
+      .attendance-record a {
+        color: #007bff;
+        text-decoration: none;
+      }
+      .attendance-record a:hover {
+        text-decoration: underline;
+      }
+      /* 출석 상태별 태그 스타일 */
+      .attendance-state {
+        font-weight: bold;
+        padding: 2px 6px;
+        border-radius: 3px;
+        color: #fff;
+        font-size: 0.9em;
+      }
+      .state-결석 {
+        background-color: #dc3545; /* 빨간색 */
+      }
+      .state-병결 {
+        background-color: #fd7e14; /* 주황색 */
+      }
+      .state-지각 {
+        background-color: #ffc107;
+        color: #333; /* 노란색, 어두운 글자색 */
+      }
+      .state-조퇴 {
+        background-color: #20c997; /* 청록색 */
+      }
+      .state-공결 {
+        background-color: #28a745; /* 녹색 */
+      }
+      .state-출석 {
+        background-color: #28a745;
+      }
+      /* 기타 필요한 상태 추가 가능 (예: .state-출석 { background-color: #28a745; }) */
+
+      /* Specific styling for Puppeteer PDF generation */
+      @media print {
+        body {
+          background-color: #fff; /* Ensure background is white for print */
+        }
+        .container {
+          box-shadow: none;
+          border: none;
+          margin: 0;
+          max-width: 100%;
+        }
+        .attendance-record {
+          border-color: #ccc; /* 인쇄 시 테두리 색상 조정 */
+          background-color: #fff; /* 인쇄 시 배경색 흰색으로 */
+          border-left-color: inherit; /* 인쇄 시에는 JS로 적용된 색상 대신 상속받거나 기본색 사용 (필요시 조정) */
+        }
+        .attendance-record-결석 {
+          border-left-color: #dc3545 !important;
+        } /* Ensure print color for borders */
+        .attendance-record-병결 {
+          border-left-color: #fd7e14 !important;
+        }
+        .attendance-record-지각 {
+          border-left-color: #ffc107 !important;
+        }
+        .attendance-record-조퇴 {
+          border-left-color: #20c997 !important;
+        }
+        .attendance-record-공결 {
+          border-left-color: #28a745 !important;
+        }
+        .attendance-record-출석 {
+          border-left-color: #28a745 !important;
+        }
+
+        .attendance-state {
+          /* 인쇄 시 상태 배경색 유지 */
+          -webkit-print-color-adjust: exact;
+          color-adjust: exact;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>출석 현황 보고서</h1>
+      </header>
+
+      <section class="student-info">
+        <table>
+          <tr>
+            <td><strong>이름:</strong></td>
+            <td><%= student.name %></td>
+            <td><strong>학번:</strong></td>
+            <td><%= student.student_id %></td>
+          </tr>
+          <tr>
+            <td><strong>반:</strong></td>
+            <td>
+              <% if (student.class_id) { %> <%= student.class_id.grade %>학년
+              <%= student.class_id.class %>반 <% } else { %>
+              <span class="no-data">N/A</span>
+              <% } %>
+            </td>
+          </tr>
+        </table>
+      </section>
+
+      <section>
+        <h2 class="section-title">출석 정보</h2>
+
+        <% if (studentAttendance && studentAttendance.length > 0) { %> <%
+        studentAttendance.forEach(function(attendanceItem) { %>
+        <div
+          class="attendance-record attendance-record-<%= attendanceItem.state %>"
+        >
+          <p>
+            <strong>날짜:</strong> <%= new
+            Date(attendanceItem.date).toLocaleDateString('ko-KR', { year:
+            'numeric', month: 'long', day: 'numeric' }) %>
+          </p>
+          <p>
+            <strong>구분:</strong>
+            <span class="attendance-state state-<%= attendanceItem.state %>"
+              ><%= attendanceItem.state %></span
+            >
+          </p>
+          <p>
+            <strong>사유:</strong>
+            <span class="reason-value"
+              ><%= attendanceItem.reason ? attendanceItem.reason : 'N/A'
+              %></span
+            >
+          </p>
+          <p>
+            <strong>첨부파일:</strong>
+            <% if (attendanceItem.file && attendanceItem.file !== '') { %>
+            <a href="<%= attendanceItem.file %>" target="_blank">파일 보기</a>
+            <% } else { %>
+            <span>없음</span>
+            <% } %>
+          </p>
+        </div>
+        <% }); %> <% } else { %>
+        <p>
+          <span class="no-data">해당 학생의 출석 정보를 찾을 수 없습니다.</span>
+        </p>
+        <% } %>
+      </section>
+
+      <footer class="footer">
+        <p>본 출석 현황 보고서는 학생 관리 및 참고를 위한 자료입니다.</p>
+        <p>&copy; COSY</p>
+      </footer>
+    </div>
+  </body>
+</html>

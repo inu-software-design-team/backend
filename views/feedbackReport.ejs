@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>학생 피드백 보고서</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f7f6;
+        color: #333;
+        -webkit-print-color-adjust: exact; /* Chrome, Safari, Edge */
+        color-adjust: exact; /* Firefox */
+      }
+      .container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 30px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+      header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #4a90e2;
+      }
+      header h1 {
+        font-size: 28px;
+        color: #2c3e50;
+        margin: 0 0 5px 0;
+      }
+      .student-info {
+        margin-bottom: 30px;
+        padding: 20px;
+        background-color: #e9f3fd;
+        border-left: 5px solid #4a90e2;
+        border-radius: 0 6px 6px 0;
+      }
+      .student-info table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .student-info td {
+        padding: 8px 0;
+        font-size: 15px;
+        vertical-align: top;
+      }
+      .student-info strong {
+        /* Styles for strong tags within student-info */
+        color: #34495e;
+        margin-right: 10px;
+        min-width: 70px;
+        display: inline-block;
+      }
+      .section-title {
+        font-size: 22px;
+        color: #4a90e2;
+        margin-top: 30px;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #ddd;
+      }
+      .no-data {
+        color: #95a5a6;
+        font-style: italic;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        font-size: 12px;
+        color: #7f8c8d;
+      }
+
+      /* Styles for Feedback Entries */
+      .feedback-entry {
+        /* Renamed from .counseling-entry */
+        margin-bottom: 20px;
+        padding: 15px;
+        border: 1px solid #eee;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+      }
+      .feedback-entry h4 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        font-size: 18px;
+        color: #337ab7;
+      }
+      .feedback-entry h4 .semester-info {
+        font-weight: normal;
+        font-size: 0.9em;
+      }
+      .feedback-entry .details-paragraph {
+        margin-bottom: 5px;
+      }
+      .feedback-entry .content-section {
+        margin-bottom: 10px;
+      }
+      /* Strong tags directly under .content-section */
+      .feedback-entry .content-section > strong {
+        display: block; /* Makes "피드백 내용:" appear on its own line above the text */
+        margin-bottom: 3px; /* Adds a small space after the label */
+      }
+      .feedback-entry .actual-text-content {
+        margin-top: 3px; /* Original style */
+        padding-left: 10px;
+        white-space: pre-wrap;
+      }
+      .feedback-entry .main-actual-text-content {
+        /* For feedback content, similar to main counseling content */
+        border-left: 3px solid #ddd;
+      }
+
+      /* Specific styling for Puppeteer PDF generation */
+      @media print {
+        body {
+          background-color: #fff; /* Ensure background is white for print */
+        }
+        .container {
+          box-shadow: none;
+          border: none;
+          margin: 0;
+          max-width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>학생 피드백 보고서</h1>
+      </header>
+
+      <section class="student-info">
+        <table>
+          <tr>
+            <td><strong>이름:</strong></td>
+            <td><%= student.name %></td>
+            <td><strong>학번:</strong></td>
+            <td><%= student.student_id %></td>
+          </tr>
+          <tr>
+            <td><strong>반:</strong></td>
+            <td>
+              <% if (student.class_id) { %> <%= student.class_id.grade %>학년
+              <%= student.class_id.class %>반 <% } else { %>
+              <span class="no-data">N/A</span>
+              <% } %>
+            </td>
+          </tr>
+        </table>
+      </section>
+
+      <section>
+        <h2 class="section-title">피드백 정보</h2>
+
+        <% if (studentFeedback && studentFeedback.length > 0) { %> <%
+        studentFeedback.forEach(function(feedbackItem) { %>
+        <div class="feedback-entry">
+          <h4>
+            피드백 기록 날짜: <%= new
+            Date(feedbackItem.date).toLocaleDateString('ko-KR', { year:
+            'numeric', month: 'long', day: 'numeric' }) %>
+            <span class="semester-info"
+              ><% let semesterDisplay = ''; if (feedbackItem.semester ===
+              'finalSemester') { semesterDisplay = '(2학기)'; } else if
+              (feedbackItem.semester === 'firstSemester') { semesterDisplay =
+              '(1학기)'; } %><%= semesterDisplay %></span
+            >
+          </h4>
+          <p class="details-paragraph">
+            <strong>교번:</strong> <%= feedbackItem.teacher_id %>
+          </p>
+          <p class="details-paragraph">
+            <strong>주제:</strong> <%= feedbackItem.category %>
+          </p>
+          <p class="details-paragraph">
+            <strong>제목:</strong> <%= feedbackItem.title %>
+          </p>
+          <div class="content-section">
+            <strong>피드백 내용:</strong>
+            <p class="actual-text-content main-actual-text-content">
+              <%= feedbackItem.content %>
+            </p>
+          </div>
+        </div>
+        <br />
+        <br />
+        <% }); %> <% } else { %>
+        <p>
+          <span class="no-data"
+            >해당 학생의 피드백 정보를 찾을 수 없습니다.</span
+          >
+        </p>
+        <% } %>
+      </section>
+
+      <footer class="footer">
+        <p>본 피드백 보고서는 학생 지원을 위한 참고 자료입니다.</p>
+        {/* Footer text updated for feedback context */}
+        <p>&copy; COSY</p>
+      </footer>
+    </div>
+  </body>
+</html>
