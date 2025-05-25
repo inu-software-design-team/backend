@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>학생 성적 보고서</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f7f6;
+        color: #333;
+        -webkit-print-color-adjust: exact; /* Chrome, Safari, Edge */
+        color-adjust: exact; /* Firefox */
+      }
+      .container {
+        max-width: 800px;
+        margin: 20px auto;
+        padding: 30px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+      header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #4a90e2;
+      }
+      header h1 {
+        font-size: 28px;
+        color: #2c3e50;
+        margin: 0 0 5px 0;
+      }
+      header p {
+        font-size: 16px;
+        color: #555;
+        margin: 0;
+      }
+      .student-info {
+        margin-bottom: 30px;
+        padding: 20px;
+        background-color: #e9f3fd;
+        border-left: 5px solid #4a90e2;
+        border-radius: 0 6px 6px 0;
+      }
+      .student-info table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .student-info td {
+        padding: 8px 0;
+        font-size: 15px;
+        vertical-align: top;
+      }
+      .student-info strong {
+        color: #34495e;
+        margin-right: 10px;
+        min-width: 70px;
+        display: inline-block;
+      }
+      .section-title {
+        font-size: 22px;
+        color: #4a90e2;
+        margin-top: 30px;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #ddd;
+      }
+      table.grades-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 25px;
+        font-size: 13px; /* 기존 14px에서 13px로 줄임 (또는 필요에 따라 12px 등) */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      .grades-table th,
+      .grades-table td {
+        border: 1px solid #dfe6e9;
+        padding: 8px; /* 기존 12px에서 8px로 줄임 (또는 필요에 따라 6px 등) */
+        text-align: center;
+      }
+      .grades-table th {
+        background-color: #4a90e2;
+        color: white;
+        font-weight: 600;
+      }
+      .grades-table td.subject-name {
+        text-align: left;
+        font-weight: 500;
+        background-color: #f8f9fa;
+      }
+      .grades-table .semester-group th {
+        /* Not directly used in this version, but kept for potential future use */
+        background-color: #74b9ff;
+      }
+      .grades-table .exam-type {
+        font-size: 0.9em;
+        color: #555; /* For sub-headers like '중간', '기말' if styled within th */
+        background-color: #a0cffc; /* Lighter blue for sub-header cells */
+        color: #fff;
+      }
+      .no-data {
+        color: #95a5a6;
+        font-style: italic;
+      }
+      .summary-table td {
+        /* For Total and Average rows */
+        font-weight: bold;
+        background-color: #e9ecef;
+      }
+      .summary-table td.subject-name {
+        background-color: #ddeeff; /* Different background for summary subject names */
+      }
+      .year-header {
+        text-align: center;
+        font-size: 1.2em;
+        color: #333;
+        margin-top: 25px;
+        margin-bottom: 10px;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 40px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+        font-size: 12px;
+        color: #7f8c8d;
+      }
+      /* Specific styling for Puppeteer PDF generation */
+      @media print {
+        body {
+          background-color: #fff; /* Ensure background is white for print */
+        }
+        .container {
+          box-shadow: none;
+          border: none;
+          margin: 0;
+          max-width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>학생 성적 보고서</h1>
+      </header>
+
+      <section class="student-info">
+        <table>
+          <tr>
+            <td><strong>이름:</strong></td>
+            <td><%= student.name %></td>
+            <td><strong>학번:</strong></td>
+            <td><%= student.student_id %></td>
+          </tr>
+          <tr>
+            <td><strong>반:</strong></td>
+            <td>
+              <% if (student.class_id) { %> <%= student.class_id.grade %>학년
+              <%= student.class_id.class %>반 <% } else { %>
+              <span class="no-data">N/A</span>
+              <% } %>
+            </td>
+          </tr>
+        </table>
+      </section>
+
+      <section>
+        <h2 class="section-title">성적 정보</h2>
+        <% if (studentGrade && studentGrade.length > 0) { %> <%
+        studentGrade.forEach(function(gradeItem) { %>
+
+        <h3 class="year-header"><%= gradeItem.year %> 학년도</h3>
+        <table class="grades-table">
+          <thead>
+            <tr>
+              <th rowspan="2" style="vertical-align: middle">과목</th>
+              <th colspan="2">1학기</th>
+              <th colspan="2">2학기</th>
+            </tr>
+            <tr>
+              <th class="exam-type">중간</th>
+              <th class="exam-type">기말</th>
+              <th class="exam-type">중간</th>
+              <th class="exam-type">기말</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="subject-name">국어</td>
+              <td><%= gradeItem.korean.firstSemester.midterm || 0 %></td>
+              <td><%= gradeItem.korean.firstSemester.finalterm || 0 %></td>
+              <td><%= gradeItem.korean.lastSemester.midterm || 0 %></td>
+              <td><%= gradeItem.korean.lastSemester.finalterm || 0 %></td>
+            </tr>
+            <tr>
+              <td class="subject-name">수학</td>
+              <td><%= gradeItem.math.firstSemester.midterm || 0 %></td>
+              <td><%= gradeItem.math.firstSemester.finalterm || 0 %></td>
+              <td><%= gradeItem.math.lastSemester.midterm || 0 %></td>
+              <td><%= gradeItem.math.lastSemester.finalterm || 0 %></td>
+            </tr>
+            <tr>
+              <td class="subject-name">영어</td>
+              <td><%= gradeItem.english.firstSemester.midterm || 0 %></td>
+              <td><%= gradeItem.english.firstSemester.finalterm || 0 %></td>
+              <td><%= gradeItem.english.lastSemester.midterm || 0 %></td>
+              <td><%= gradeItem.english.lastSemester.finalterm || 0 %></td>
+            </tr>
+            <tr>
+              <td class="subject-name">사회</td>
+              <td><%= gradeItem.society.firstSemester.midterm || 0 %></td>
+              <td><%= gradeItem.society.firstSemester.finalterm || 0 %></td>
+              <td><%= gradeItem.society.lastSemester.midterm || 0 %></td>
+              <td><%= gradeItem.society.lastSemester.finalterm || 0 %></td>
+            </tr>
+            <tr>
+              <td class="subject-name">과학</td>
+              <td><%= gradeItem.science.firstSemester.midterm || 0 %></td>
+              <td><%= gradeItem.science.firstSemester.finalterm || 0 %></td>
+              <td><%= gradeItem.science.lastSemester.midterm || 0 %></td>
+              <td><%= gradeItem.science.lastSemester.finalterm || 0 %></td>
+            </tr>
+
+            <% const subjects = ['korean', 'math', 'english', 'society',
+            'science']; const getSafe = (subject, semester, type) =>
+            gradeItem[subject]?.[semester]?.[type] ?? 0; let mid1 = 0, fin1 = 0,
+            mid2 = 0, fin2 = 0; subjects.forEach(subject => { mid1 +=
+            getSafe(subject, 'firstSemester', 'midterm'); fin1 +=
+            getSafe(subject, 'firstSemester', 'finalterm'); mid2 +=
+            getSafe(subject, 'lastSemester', 'midterm'); fin2 +=
+            getSafe(subject, 'lastSemester', 'finalterm'); }); const count =
+            subjects.length; %>
+            <tr class="summary-table">
+              <td class="subject-name">평균</td>
+              <td><%= (mid1 / count).toFixed(1) %></td>
+              <td><%= (fin1 / count).toFixed(1) %></td>
+              <td><%= (mid2 / count).toFixed(1) %></td>
+              <td><%= (fin2 / count).toFixed(1) %></td>
+            </tr>
+          </tbody>
+        </table>
+        <% }); %> <% } else { %>
+        <p>
+          <span class="no-data">해당 학생의 성적 정보를 찾을 수 없습니다.</span>
+        </p>
+        <% } %>
+      </section>
+      <footer class="footer">
+        <p>본 성적 보고서는 학생의 학업 성취도 참고 자료입니다.</p>
+        <p>&copy; COSY</p>
+      </footer>
+    </div>
+  </body>
+</html>

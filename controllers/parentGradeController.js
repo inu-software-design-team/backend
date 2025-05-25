@@ -98,7 +98,6 @@ exports.selectYearForGrade = asyncHandler(async (req, res) => {
 
 // 성적/학부모 탭 특정 학생 성적 조회 api
 exports.checkGrade = asyncHandler(async (req, res) => {
-  console.log("sdfdf");
   try {
     const student_id = req.params.student_id;
     // 조회하고자 하는 연도
