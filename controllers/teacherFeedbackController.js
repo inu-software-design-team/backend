@@ -110,7 +110,9 @@ exports.modifyFeedback = asyncHandler(async (req, res) => {
     feedback.category = category;
     feedback.title = title;
     feedback.content = content;
-    feedback.date = req.body.date;
+    // feedback.date = req.body.date;
+    const date = new Date().toISOString();
+    feedback.date = date; // 현재 날짜로 수정
     await feedback.save();
     // 피드백 수정 성공
     return res.json({ message: "피드백 수정 성공", updatedFeedback: feedback });
@@ -227,7 +229,7 @@ exports.createFeedback = asyncHandler(async (req, res) => {
 
     // 현재 날짜와 그에 해당하는 학기
     const now = new Date();
-    const date = new Date().toISOString().slice(0, 10);
+    const date = new Date().toISOString();
     const month = now.getMonth() + 1; // 월은 0부터 시작하므로 +1
     const semester = month <= 6 ? "firstSemester" : "finalSemester";
 
