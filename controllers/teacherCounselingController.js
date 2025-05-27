@@ -94,7 +94,7 @@ exports.createCounseling = asyncHandler(async (req, res) => {
     const date = new Date().toISOString().slice(0, 10);
     // 학기 설정
     const month = now.getMonth() + 1; // 월은 0부터 시작하므로 +1
-    const semester = month <= 6 ? "firstSemester" : "finalSemester";
+    const semester = month <= 6 ? "firstSemester" : "lastSemester";
     // 작성자 교사가 현재 담당하는 학급 조회(상담 대상 학생의 학급)
     const year = now.getFullYear();
     const theClass = await Class.findOne({
@@ -218,7 +218,7 @@ exports.modifyCounseling = asyncHandler(async (req, res) => {
     // 상담 내역 수정
     // 학기 설정
     const month = new Date().getMonth() + 1; // 월은 0부터 시작하므로 +1
-    const semester = month <= 6 ? "firstSemester" : "finalSemester";
+    const semester = month <= 6 ? "firstSemester" : "lastSemester";
 
     theCounseling.topic = req.body.topic;
     theCounseling.title = req.body.title;
