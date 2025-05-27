@@ -10,7 +10,7 @@ exports.register = asyncHandler(async (req, res) => {
   try {
     const { kakaoId, linked, role, email, phone, address } = req.body; //number는 배열값입니다!
 
-    const emailRegex = /^\S+@\S+\.\S+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return res
         .status(400)

@@ -227,11 +227,7 @@ exports.createFeedback = asyncHandler(async (req, res) => {
     const date = new Date().toISOString().slice(0, 10);
     const month = now.getMonth() + 1; // 월은 0부터 시작하므로 +1
     const semester = month <= 6 ? "firstSemester" : "finalSemester";
-    month >= 9 && month <= 11
-      ? "2학기"
-      : month >= 1 && month <= 8
-      ? "1학기"
-      : "";
+
     // 피드백 생성
     const newFeedback = new Feedback({
       student_id: student_id,
