@@ -225,6 +225,7 @@ exports.modifyCounseling = asyncHandler(async (req, res) => {
     theCounseling.content = req.body.content;
     theCounseling.next_date = req.body.next_date;
     theCounseling.next_content = req.body.next_content;
+    theCounseling.date = req.body.date;
     theCounseling.semester = semester;
 
     await theCounseling.save();

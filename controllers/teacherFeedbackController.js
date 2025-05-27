@@ -110,6 +110,7 @@ exports.modifyFeedback = asyncHandler(async (req, res) => {
     feedback.category = category;
     feedback.title = title;
     feedback.content = content;
+    feedback.date = req.body.date;
     await feedback.save();
     // 피드백 수정 성공
     return res.json({ message: "피드백 수정 성공", updatedFeedback: feedback });
