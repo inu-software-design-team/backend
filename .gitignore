@@ -23,3 +23,5 @@ coverage/
 
 # 기타
 .DS_Store
+
+.sonar.properties
