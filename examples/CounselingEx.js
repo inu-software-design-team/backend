@@ -60,6 +60,6 @@ mongoose
       next_date: new Date("2024-09-10"),
       next_content:
         "진로 상담 및 부모님과의 소통 방법 지도. 다음 상담 시 학생의 감정 변화 및 대화 진행 상황 확인 예정.",
-      semester: "finalSemester",
+      semester: "lastSemester",
     });
   });
