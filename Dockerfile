@@ -1,6 +1,5 @@
 FROM node:18
 
-# Puppeteer 종속성 설치
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     fonts-liberation \
@@ -39,7 +38,11 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     wget \
     xdg-utils \
+    fonts-nanum \
+    fonts-noto-cjk \
+    fonts-unfonts-core \ 
     --no-install-recommends \
+    && fc-cache -fv \ 
     && rm -rf /var/lib/apt/lists/* # 이미지 크기를 줄이기 위해 불필요한 파일 정리
 
 WORKDIR /app
