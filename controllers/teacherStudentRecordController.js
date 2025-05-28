@@ -417,6 +417,12 @@ exports.addRemark = asyncHandler(async (req, res) => {
   if (remarkInformation.date) {
     remarkInformation.date = new Date(remarkInformation.date); // → Date 객체로 변환됨
   }
+  // 시간 값 추가
+  const dateOnly = new Date(remarkInformation.date);
+  const now = new Date();
+  dateOnly.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+
+  remarkInformation.date = dateOnly;
 
   try {
     // 출석 생성
@@ -467,6 +473,12 @@ exports.patchRemark = asyncHandler(async (req, res) => {
   if (updatedData.date) {
     updatedData.date = new Date(updatedData.date); // → Date 객체로 변환됨
   }
+  // 시간 값 추가
+  const dateOnly = new Date(updatedData.date);
+  const now = new Date();
+  dateOnly.setHours(now.getHours(), now.getMinutes(), now.getSeconds());
+
+  updatedData.date = dateOnly;
 
   try {
     // 출석 데이터 업데이트
