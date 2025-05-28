@@ -168,7 +168,7 @@
             'numeric', month: 'long', day: 'numeric' }) %>
             <span class="semester-info"
               ><% let semesterDisplay = ''; if (feedbackItem.semester ===
-              'finalSemester') { semesterDisplay = '(2학기)'; } else if
+              'lastSemester') { semesterDisplay = '(2학기)'; } else if
               (feedbackItem.semester === 'firstSemester') { semesterDisplay =
               '(1학기)'; } %><%= semesterDisplay %></span
             >
