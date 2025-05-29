@@ -3,6 +3,7 @@ const Teacher = require("../models/Teacher");
 const Student = require("../models/Student");
 const Parent = require("../models/Parent");
 const Sentry = require("@sentry/node");
+const validator = require("email-validator");
 const asyncHandler = require("express-async-handler");
 
 // 정보입력
@@ -10,8 +11,16 @@ exports.register = asyncHandler(async (req, res) => {
   try {
     const { kakaoId, linked, role, email, phone, address } = req.body; //number는 배열값입니다!
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const isValid = validator(email);
+    /*
     if (!emailRegex.test(email)) {
+      return res
+        .status(400)
+        .json({ message: "유효한 이메일 형식이어야 합니다." });
+    }
+    */
+    if (!isValid) {
       return res
         .status(400)
         .json({ message: "유효한 이메일 형식이어야 합니다." });
@@ -29,9 +38,9 @@ exports.register = asyncHandler(async (req, res) => {
       });
     }
 
-    if (!email || !address || !role || !linked) {
+    if (!email || !address || !role || !linked || !phone) {
       return res.status(400).json({
-        message: "이메일, 전화번호, 주소를 모두 입력하세요.",
+        message: "이메일, 전화번호, 주소, 역할을 모두 입력하세요.",
       });
     }
 
@@ -48,7 +57,7 @@ exports.register = asyncHandler(async (req, res) => {
     }
 
     let newUser = null;
-
+    // 유저 생성
     newUser = new User({
       kakaoId: kakaoId,
       linked: linked,
@@ -168,6 +177,13 @@ exports.login = asyncHandler(async (req, res) => {
   try {
     const { kakaoId } = req.body;
 
+    // 카카오 ID가 제공되지 않음
+    if (!kakaoId) {
+      return res
+        .status(400)
+        .json({ message: "카카오 ID가 제공되지 않았습니다." });
+    }
+    // 유저 조회
     const _user = await User.findOne({ kakaoId });
     if (_user) {
       //세션 객체(req.session) 안에 user라는  키를 만들어서, 그 안에 유저 정보를 저장해주는 거야.즉, 세션을 통해 로그인된 유저의 정보를 유지
