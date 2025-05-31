@@ -1,9 +1,10 @@
 const express = require("express");
 const {
-  checkAll,
   checkGrade,
   selectYearForGrade,
 } = require("../controllers/parentGradeController");
+
+const { checkMyKids } = require("../controllers/studentListController");
 const router = express.Router();
 
 const {
@@ -12,7 +13,7 @@ const {
 
 const { checkAllFeedback } = require("../controllers/parentFeedbackController");
 
-router.route("/grades").get(checkAll);
+router.route("/grades").get(checkMyKids);
 //성적
 router.route("/grades/yearList/:student_id").get(selectYearForGrade);
 router.route("/grades/:student_id/:year").get(checkGrade);

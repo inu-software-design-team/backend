@@ -121,3 +121,69 @@ exports.checkAll = asyncHandler(async (req, res) => {
     });
   }
 });
+
+// 학부모 탭 학생 목록 api
+exports.checkMyKids = asyncHandler(async (req, res) => {
+  try {
+    /*
+    // 세션이 존재하지 않음
+    if (!req.session || !req.session.user) {
+      return res
+        .status(400)
+        .json({ message: "세션이 존재하지 않음/로그인 되어있지 않음" });
+    }
+    // 세션 만료됨
+    if (new Date(req.session.cookie.expires) < new Date()) {
+      return res.status(400).json({ message: "세션이 만료됨" });
+    }
+    */
+
+    const linkedIds = req.session.user.linked; // 예: [2001]
+
+    // 학부모 조회
+    const parent = await Parent.findOne({ linked: linkedIds });
+
+    // 학부모가 존재하지 않음
+    if (!parent) {
+      return res.status(404).json({
+        message: "해당 학부모가 존재하지 않습니다.",
+      });
+    }
+    // 학부모가 자녀의 학번을 가지고 있지 않음
+    if (parent.linked.length === 0) {
+      return res.status(404).json({
+        message: "해당 학부모의 자녀가 존재하지 않습니다.",
+      });
+    }
+
+    const students = await Student.find({
+      student_id: { $in: linkedIds },
+    }).populate("class_id"); // 필요한 필드만
+
+    // 학생이 존재하지 않음
+    if (!students || students.length === 0) {
+      return res.status(404).json({
+        message: "해당 학부모의 자녀가 존재하지 않습니다.",
+      });
+    }
+
+    console.log(students);
+
+    return res.status(200).json({
+      message: "현재 학부모의 학급 학생들 정보입니다.",
+      data: {
+        studentsList: students, // 학생들의 objectId/학번/이름
+      },
+    });
+  } catch (error) {
+    console.error("학생 목록 오류:", error);
+    res.status(500).json({ message: "학생 목록 불러오기 실패", error });
+
+    Sentry.withScope((scope) => {
+      scope.setLevel("error");
+      scope.setTag("type", "api");
+      scope.setTag("api", "checkAllStudents");
+      Sentry.captureException(error);
+    });
+  }
+});
