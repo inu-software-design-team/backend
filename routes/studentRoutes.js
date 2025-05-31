@@ -1,4 +1,5 @@
 const express = require("express");
+const { checkMe } = require("../controllers/studentListController");
 const {
   checkAll,
   selectYearForGrade,
@@ -22,7 +23,7 @@ const {
 
 const router = express.Router();
 
-router.route("/grades").get(checkAll);
+router.route("/studentslist").get(checkMe);
 //성적
 router.route("/grades/yearList/:student_id").get(selectYearForGrade);
 router.route("/grades/:student_id/:year").get(checkGrade);

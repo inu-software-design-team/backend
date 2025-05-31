@@ -187,3 +187,55 @@ exports.checkMyKids = asyncHandler(async (req, res) => {
     });
   }
 });
+
+// 학생 탭 학생 목록 api
+exports.checkMe = asyncHandler(async (req, res) => {
+  try {
+    // 세션이 존재하지 않음
+    if (!req.session || !req.session.user) {
+      return res
+        .status(400)
+        .json({ message: "세션이 존재하지 않음/로그인 되어있지 않음" });
+    }
+    // 세션 만료됨
+    if (new Date(req.session.cookie.expires) < new Date()) {
+      return res.status(400).json({ message: "세션이 만료됨" });
+    }
+
+    const linkedIds = req.session.user.linked; // 예: [2001]
+
+    if (!linkedIds || linkedIds.length === 0) {
+      return res.status(400).json({ message: "연결된 학생 ID가 없습니다." });
+    }
+
+    const student = await Student.findOne({
+      student_id: linkedIds[0],
+    }).populate("class_id");
+
+    // 학생이 존재하지 않음
+    if (!student) {
+      return res
+        .status(404)
+        .json({ message: "해당 학번의 학생이 존재하지 않습니다." });
+    }
+
+    console.log(student);
+
+    return res.status(200).json({
+      message: "현재 학생의 학급 학생들 정보입니다.",
+      data: {
+        studentsList: student, // 학생들의 objectId/학번/이름
+      },
+    });
+  } catch (error) {
+    console.error("학생 목록 오류:", error);
+    res.status(500).json({ message: "학생 목록 불러오기 실패", error });
+
+    Sentry.withScope((scope) => {
+      scope.setLevel("error");
+      scope.setTag("type", "api");
+      scope.setTag("api", "checkStudent");
+      Sentry.captureException(error);
+    });
+  }
+});
