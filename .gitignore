@@ -24,6 +24,8 @@ coverage/
 # 기타
 .DS_Store
 
-.sonar-project.properties
-.scannerwork/
-.infra/nginx/
+sonar-project.properties
+scannerwork/
+infra/nginx/
+.docker-compose.yml
+.Dockerfile

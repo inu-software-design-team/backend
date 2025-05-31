@@ -12,6 +12,14 @@ exports.selectYear = asyncHandler(async (req, res) => {
     // 해당 교사가 맡았던 학급들 모두 조회 후 연도 목록 추출
     const classes = await Class.distinct("year", { teacher_id: teacher_id });
 
+    // 연도 목록이 비어있을 경우
+    if (!classes || classes.length === 0) {
+      return res.status(404).json({
+        message: "해당 교사가 맡은 학급이 없습니다.",
+        yearSelection: [],
+      });
+    }
+
     return res.status(200).json({
       message: "학생 목록 탭 연도 선택지입니다.",
       yearSelection: classes,
@@ -65,6 +73,13 @@ exports.checkAll = asyncHandler(async (req, res) => {
       year: selYear,
     });
 
+    // 선택된 연도에 해당하는 학급이 존재하지 않을 경우
+    if (!targetClass) {
+      return res.status(404).json({
+        message: "해당 연도에 해당하는 학급이 존재하지 않습니다.",
+      });
+    }
+
     console.log(targetClass);
 
     // 학급 학생들 모두 조회
@@ -77,6 +92,12 @@ exports.checkAll = asyncHandler(async (req, res) => {
       .select("name student_id")
       .populate("class_id", "grade class");
 
+    // 학생 목록이 비어있을 경우
+    if (!students || students.length === 0) {
+      return res.status(404).json({
+        message: "해당 연도에 해당하는 학급의 학생이 없습니다.",
+      });
+    }
     console.log(students);
 
     return res.status(200).json({

@@ -32,6 +32,10 @@ exports.checkAllFeedback = asyncHandler(async (req, res) => {
         path: "teacher",
         select: "name",
       });
+    // 피드백 내역이 존재하지 않는 경우
+    if (!allFeedback || allFeedback.length === 0) {
+      return res.status(404).json({ message: "피드백 내역이 없습니다." });
+    }
 
     const refinedFeedbackList = allFeedback.map((item) => ({
       _id: item._id,
@@ -46,6 +50,11 @@ exports.checkAllFeedback = asyncHandler(async (req, res) => {
       semester: item.semester,
       teacher_name: item.teacher?.name, // teacher.name만 추출해서 최상위에
     }));
+
+    // 피드백 내역이 존재하지 않을 경우
+    if (!refinedFeedbackList || refinedFeedbackList.length === 0) {
+      return res.status(404).json({ message: "피드백 내역이 없습니다." });
+    }
     console.log(refinedFeedbackList);
     return res.json(refinedFeedbackList);
   } catch (error) {

@@ -27,8 +27,11 @@ exports.gradeReport = asyncHandler(async (req, res) => {
 
     console.log(studentGrade);
 
+    // 해당 학생이 존재하지 않을 경우
     if (!student) return res.status(404).send("학생을 찾을 수 없습니다.");
-    if (!studentGrade) return res.status(404).send("성적을 찾을 수 없습니다.");
+    // 학생의 성적이 존재하지 않음
+    if (!studentGrade || studentGrade.length === 0)
+      return res.status(404).send("성적을 찾을 수 없습니다.");
 
     // EJS 템플릿 경로
     const templatePath = path.join(__dirname, "../views/gradeReport.ejs");
@@ -78,9 +81,16 @@ exports.counselingReport = asyncHandler(async (req, res) => {
       student_id: student_id,
     }).populate("class_id");
 
+    // 해당 학생이 존재하지 않을 경우
+    if (!student) return res.status(404).send("학생을 찾을 수 없습니다.");
+
     const studentCounseling = await Counseling.find({
       student_id: student_id,
     });
+
+    // 학생의 상담 기록이 존재하지 않음
+    if (!studentCounseling || studentCounseling.length === 0)
+      return res.status(404).send("상담 기록을 찾을 수 없습니다.");
 
     // date 기준 오름차순 정렬
     studentCounseling.sort((a, b) => new Date(a.date) - new Date(b.date));
