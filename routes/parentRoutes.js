@@ -13,7 +13,7 @@ const {
 
 const { checkAllFeedback } = require("../controllers/parentFeedbackController");
 
-router.route("/grades").get(checkMyKids);
+router.route("/studentslist").get(checkMyKids);
 //성적
 router.route("/grades/yearList/:student_id").get(selectYearForGrade);
 router.route("/grades/:student_id/:year").get(checkGrade);
