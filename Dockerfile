@@ -43,7 +43,7 @@ RUN apt-get update && apt-get install -y \
     fonts-unfonts-core \ 
     --no-install-recommends \
     && fc-cache -fv \ 
-    && rm -rf /var/lib/apt/lists/* # 이미지 크기를 줄이기 위해 불필요한 파일 정리
+    && rm -rf /var/lib/apt/lists/* 
 
 WORKDIR /app
 

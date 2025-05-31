@@ -30,13 +30,14 @@ exports.checkAllFeedback = asyncHandler(async (req, res) => {
       .populate({ path: "class", select: "year" })
       .populate({
         path: "teacher",
-        select: "name",
+        select: "name subject",
       });
     // 피드백이 없는 경우
     if (!allFeedback || allFeedback.length === 0) {
       return res.status(404).json({ message: "피드백이 없습니다." });
     }
 
+    //console.log(allFeedback);
     const refinedFeedbackList = allFeedback.map((item) => ({
       _id: item._id,
       student_id: item.student_id,
@@ -49,6 +50,7 @@ exports.checkAllFeedback = asyncHandler(async (req, res) => {
       year: item.class?.year, // class.year만 추출해서 최상위에
       semester: item.semester,
       teacher_name: item.teacher?.name, // teacher.name만 추출해서 최상위에
+      teacher_subject: item.teacher?.subject,
     }));
 
     // 피드백이 없을 경우
