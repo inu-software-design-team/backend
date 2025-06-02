@@ -225,7 +225,12 @@ exports.logout = asyncHandler(async (req, res) => {
           return res.status(500).json({ message: "로그아웃 실패" });
         }
         // 쿠키 제거
-        res.clearCookie("connect.sid"); // 기본 세션 쿠키 이름
+        res.clearCookie("connect.sid", {
+          httpOnly: true,
+          secure: false,
+          sameSite: "lax",
+          path: "/",
+        }); // 기본 세션 쿠키 이름
         return res.status(200).json({ message: "로그아웃 성공" });
       });
     } else {
