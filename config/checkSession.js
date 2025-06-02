@@ -4,6 +4,7 @@ const publicPaths = [
   "/users/kakao/callback",
   "/users/csrf-Token",
   "/users/check-Id",
+  "/users/logout",
 ];
 
 const Tokens = require("csrf");
