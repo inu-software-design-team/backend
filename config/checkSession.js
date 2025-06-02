@@ -3,7 +3,7 @@ const publicPaths = [
   "/users/kakao/login",
   "/users/kakao/callback",
   "/users/csrf-token",
-  "/users/check-Id",
+  "/users/check-id",
   "/users/logout",
 ];
 
