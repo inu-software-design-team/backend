@@ -214,6 +214,35 @@ exports.login = asyncHandler(async (req, res) => {
   }
 });
 
+// 로그아웃
+exports.logout = asyncHandler(async (req, res) => {
+  try {
+    if (req.session.user) {
+      // 세션 파괴 (삭제)
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("세션 파괴 중 오류:", err);
+          return res.status(500).json({ message: "로그아웃 실패" });
+        }
+        // 쿠키 제거
+        res.clearCookie("connect.sid"); // 기본 세션 쿠키 이름
+        return res.status(200).json({ message: "로그아웃 성공" });
+      });
+    } else {
+      return res.status(400).json({ message: "로그인된 사용자가 없습니다." });
+    }
+  } catch (error) {
+    console.error("로그아웃 오류:", error);
+    res.status(500).json({ message: "로그아웃 실패", error });
+    Sentry.withScope((scope) => {
+      scope.setLevel("error");
+      scope.setTag("type", "api");
+      scope.setTag("api", "logout");
+      Sentry.captureException(error);
+    });
+  }
+});
+
 exports.mainInfo = asyncHandler(async (req, res) => {
   switch (req.session.user.role) {
     case "student":
