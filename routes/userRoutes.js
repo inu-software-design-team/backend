@@ -4,6 +4,7 @@ const {
   checkId,
   login,
   mainInfo,
+  logout,
 } = require("../controllers/registerController");
 const { kakaoLogin, kakaoCallback } = require("../controllers/authController");
 
@@ -21,6 +22,8 @@ router.get("/kakao/callback", kakaoCallback);
 router.post("/sign-up", register); // 정보 입력
 router.post("/check-id", checkId); // 역할 검사
 router.post("/login", login); // 로그인
+
+router.post("/logout", logout); // 로그아웃
 
 // 메인 화면(유저 이름)
 router.get("/dashboard", mainInfo);
