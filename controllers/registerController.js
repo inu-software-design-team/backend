@@ -217,14 +217,20 @@ exports.login = asyncHandler(async (req, res) => {
 exports.mainInfo = asyncHandler(async (req, res) => {
   switch (req.session.user.role) {
     case "student":
-      const student = await Student.findById(req.session.user.linked[0]);
-      return res.status(200).json(student.name);
+      const student = await Student.findOne({
+        student_id: req.session.user.linked[0],
+      }).select("name -_id");
+      return res.status(200).json({ name: student.name });
     case "teacher":
-      const teacher = await Teacher.findById(req.session.user.linked[0]);
-      return res.status(200).json(teacher.name);
+      const teacher = await Teacher.findOne({
+        teacher_id: req.session.user.linked[0],
+      }).select("name -_id");
+      return res.status(200).json({ name: teacher.name });
     case "parent":
-      const parent = await Parent.findById(req.session.user.linked);
-      return res.status(200).json(parent.name);
+      const parent = await Parent.findOne({
+        chlid_id: req.session.user.linked,
+      }).select("name -_id");
+      return res.status(200).json({ name: parent.name });
     default:
       return res.status(400).json({ message: "잘못된 접근입니다." });
   }
