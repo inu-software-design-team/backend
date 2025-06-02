@@ -1,5 +1,6 @@
 const Sentry = require("@sentry/node");
 const { nodeProfilingIntegration } = require("@sentry/profiling-node");
+const checkSession = require("./config/checkSession");
 
 Sentry.init({
   dsn: process.env.DSN,
@@ -95,6 +96,7 @@ app.use(
 );
 
 // 라우트
+app.use("/api/v1", checkSession);
 app.use("/api/v1/users", require("./routes/userRoutes"));
 
 Sentry.setupExpressErrorHandler(app);

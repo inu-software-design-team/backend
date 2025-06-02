@@ -10,7 +10,7 @@ const Sentry = require("@sentry/node");
 exports.selectYearForGrade = asyncHandler(async (req, res) => {
   try {
     const student_id = req.params.student_id;
-    const teacher_id = req.session.user.linked[0];
+    //const teacher_id = req.session.user.linked[0];
 
     // 학번이 제공되지 않음
     if (!student_id) {

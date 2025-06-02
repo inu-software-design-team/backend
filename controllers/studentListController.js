@@ -42,17 +42,6 @@ exports.selectYear = asyncHandler(async (req, res) => {
 // 성적/교사 탭 학생 목록 api
 exports.checkAll = asyncHandler(async (req, res) => {
   try {
-    // 세션이 존재하지 않음
-    if (!req.session || !req.session.user) {
-      return res
-        .status(400)
-        .json({ message: "세션이 존재하지 않음/로그인 되어있지 않음" });
-    }
-    // 세션 만료됨
-    if (new Date(req.session.cookie.expires) < new Date()) {
-      return res.status(400).json({ message: "세션이 만료됨" });
-    }
-    // 세션 존재 및 유효
     // 조회하고자 하는 연도
     let selYear = req.params.year;
     // 조회 년도 누락 -> 현재 연도로 조회
@@ -191,17 +180,6 @@ exports.checkMyKids = asyncHandler(async (req, res) => {
 // 학생 탭 학생 목록 api
 exports.checkMe = asyncHandler(async (req, res) => {
   try {
-    // 세션이 존재하지 않음
-    if (!req.session || !req.session.user) {
-      return res
-        .status(400)
-        .json({ message: "세션이 존재하지 않음/로그인 되어있지 않음" });
-    }
-    // 세션 만료됨
-    if (new Date(req.session.cookie.expires) < new Date()) {
-      return res.status(400).json({ message: "세션이 만료됨" });
-    }
-
     const linkedIds = req.session.user.linked; // 예: [2001]
 
     if (!linkedIds || linkedIds.length === 0) {
