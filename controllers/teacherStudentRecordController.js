@@ -47,6 +47,10 @@ exports.fetchInformation = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "학생을 찾을 수 없습니다." });
     }
 
+    if (!parent) {
+      return res.status(404).json({ message: "학부모를 찾을 수 없습니다." });
+    }
+
     const responseData = {
       student_id: student.student_id,
       name: student.name,
@@ -103,6 +107,13 @@ exports.modifyInformation = asyncHandler(async (req, res) => {
 
     console.log(student);
 
+    // 필요 데이터 제공되지 않음
+    if (!gender || !registration_number || !phone_number || !address) {
+      return res
+        .status(400)
+        .json({ message: "필수 데이터가 제공되지 않았습니다." });
+    }
+
     // 인적사항 수정
     if (gender !== undefined) student.gender = gender;
     if (registration_number !== undefined)
@@ -156,6 +167,10 @@ exports.modifyName = asyncHandler(async (req, res) => {
     const student = await Student.findOne({ student_id: studentId });
     if (!student) {
       return res.status(404).json({ message: "학생을 찾을 수 없습니다." });
+    }
+
+    if (!name) {
+      return res.status(404).json({ message: "이름을 입력해주세요." });
     }
 
     console.log(student);
@@ -407,6 +422,12 @@ exports.addRemark = asyncHandler(async (req, res) => {
   const teacher_id = req.session.user.linked[0];
   const remarkInformation = req.body;
 
+  if (!remarkInformation) {
+    return res
+      .status(400)
+      .json({ message: "특기사항 정보가 제공되지 않았습니다." });
+  }
+
   // 작성자 과목 설정
   const teacher_subject = await Teacher.findOne({ teacher_id }).select(
     "subject"
@@ -462,6 +483,10 @@ exports.patchRemark = asyncHandler(async (req, res) => {
   const remarkId = req.params.student_id;
   const teacher_id = req.session.user.linked[0];
   const updatedData = req.body;
+
+  if (!updatedData) {
+    return res.status(400).json({ message: "수정할 특기사항을 입력하세요." });
+  }
 
   // 작성자 과목 설정
   const teacher_subject = await Teacher.findOne({ teacher_id }).select(

@@ -33,6 +33,13 @@ exports.checkAllFeedback = asyncHandler(async (req, res) => {
         select: "name subject",
       });
 
+    // 피드백 내역이 존재하지 않음
+    if (!allFeedback || allFeedback.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "해당 학번의 학생의 피드백 내역이 없습니다." });
+    }
+
     //console.log(allFeedback);
     const refinedFeedbackList = allFeedback.map((item) => ({
       _id: item._id,
@@ -48,6 +55,13 @@ exports.checkAllFeedback = asyncHandler(async (req, res) => {
       teacher_name: item.teacher?.name, // teacher.name만 추출해서 최상위에
       teacher_subject: item.teacher?.subject,
     }));
+    // 피드백 내역이 존재하지 않음
+    if (!refinedFeedbackList || refinedFeedbackList.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "해당 학번의 학생의 피드백 내역이 없습니다." });
+    }
+
     console.log(refinedFeedbackList);
     return res.json(refinedFeedbackList);
   } catch (error) {
@@ -104,6 +118,13 @@ exports.modifyFeedback = asyncHandler(async (req, res) => {
     // 피드백 존재. 피드백의 작성자와 수정자의 교번이 일치하는지 확인
     if (feedback.teacher_id !== teacher_id) {
       return res.status(403).json({ message: "피드백 수정 권한이 없습니다." });
+    }
+
+    // 피드백 카테고리, 제목, 내용이 제공되지 않은 경우
+    if (!category || !title || !content) {
+      return res
+        .status(400)
+        .json({ message: "피드백 카테고리, 제목, 내용을 제공해주세요." });
     }
 
     // 피드백 수정
@@ -252,7 +273,7 @@ exports.createFeedback = asyncHandler(async (req, res) => {
       feedback: newFeedback,
     });
   } catch (error) {
-    console.error("학생 피드백 생성성 오류:", error);
+    console.error("학생 피드백 생성 오류:", error);
     res.status(500).json({ message: "학생 피드백 생성 실패", error });
 
     Sentry.withScope((scope) => {

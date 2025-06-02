@@ -41,6 +41,11 @@ exports.checkAllCounseling = asyncHandler(async (req, res) => {
         select: "name",
       });
 
+    // 상담 내역이 존재하지 않을 경우
+    if (!allCounseling || allCounseling.length === 0) {
+      return res.status(404).json({ message: "상담 내역이 없습니다." });
+    }
+
     const refinedCounselingList = allCounseling.map((item) => ({
       _id: item._id,
       class_id: item.class_id,
@@ -90,6 +95,14 @@ exports.createCounseling = asyncHandler(async (req, res) => {
     const next_date = req.body.next_date;
     const next_content = req.body.next_content;
 
+    // 필요한 데이터가 제공되지 않은 경우
+    if (!topic || !title || !content || !next_date || next_content) {
+      return res.status(400).json({
+        message:
+          "topic, title, content, next_date, next_content를 모두 제공해야 합니다.",
+      });
+    }
+
     const now = new Date();
     const date = new Date().toISOString().slice(0, 10);
     // 학기 설정
@@ -135,6 +148,8 @@ exports.createCounseling = asyncHandler(async (req, res) => {
     }).select("name -_id");
 
     const mailOption = {
+      // 해당 선생 이메일로 보내고 싶을 경우
+      // from: await User.findOne({ linked: req.session.user.linked[0] }).select("email");
       to: toBeEmail,
       subject: `${_student.name}학생의 ${topic} 관련 새로운 상담 내역 작성이 완료되었습니다.`,
       text: `안녕하세요, ${_student.name} 학생, ${topic} 관련 새로운 상담 내역이 작성되었습니다.`,

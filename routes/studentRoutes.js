@@ -1,7 +1,6 @@
 const express = require("express");
 const { checkMe } = require("../controllers/studentListController");
 const {
-  checkAll,
   selectYearForGrade,
   checkGrade,
 } = require("../controllers/studentGradeController");

@@ -35,12 +35,10 @@ exports.selectYearForGrade = asyncHandler(async (req, res) => {
     // 해당 학생의 모든 성적 컬렉션 조회 후 연도 목록 추출
     const allGrades = await Score.distinct("year", { student_id: student_id });
 
-    return res
-      .status(200)
-      .json({
-        message: `${student_id} 학생의 성적 연도 목록입니다.`,
-        yearSelection: allGrades,
-      });
+    return res.status(200).json({
+      message: `${student_id} 학생의 성적 연도 목록입니다.`,
+      yearSelection: allGrades,
+    });
   } catch (error) {
     console.error("학생 성적 조회 연도 선택 오류:", error);
     res
@@ -102,6 +100,13 @@ exports.modifyGrade = asyncHandler(async (req, res) => {
     const semester = req.body.semester;
     const term = req.body.term;
     const score = req.body.score;
+
+    // 필요 데이터가 제공되지 않음
+    if ((!year, !subject, !semester, !term, !score)) {
+      return res.status(400).json({
+        message: "필수 데이터를 제공해주세요.",
+      });
+    }
 
     // 해당 연도의 해당 학생 성적
     const studentGrade = await Score.findOne({
@@ -210,6 +215,8 @@ exports.modifyGrade = asyncHandler(async (req, res) => {
         : null;
 
     const mailOption = {
+      // 해당 선생 이메일로 보내고 싶을 경우
+      // from: await User.findOne({ linked: req.session.user.linked[0] }).select("email");
       to: toBeEmail,
       subject: `${_student.name}학생의 ${year}년도 ${semesterNumber}학기 ${koreanterm} ${koreanSubject} 성적 수정이 완료되었습니다.`,
       text: `안녕하세요, ${_student.name} 학생, ${year}년도 ${semesterNumber}학기 ${koreanterm} ${koreanSubject} 성적이 수정되었습니다.`,
@@ -392,6 +399,11 @@ exports.createGrade = asyncHandler(async (req, res) => {
     const term = req.body.term;
     const subject = req.body.subject;
     const score = req.body.score;
+
+    // 필요 데이터 제공되지 않음
+    if (!year || !semester || !term || !subject || !score) {
+      return res.status(400).json({ message: "필수 데이터를 제공해주세요." });
+    }
 
     // 해당 연도의 해당 학생 성적
     const studentGrade = await Score.findOne({
