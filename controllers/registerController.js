@@ -217,24 +217,33 @@ exports.login = asyncHandler(async (req, res) => {
 // 로그아웃
 exports.logout = asyncHandler(async (req, res) => {
   try {
-    if (req.session.user) {
-      // 세션 파괴 (삭제)
+    if (req.session) {
+      console.log(req.session);
+      // 1. 서버 측 세션 데이터 파기
       req.session.destroy((err) => {
         if (err) {
-          console.error("세션 파괴 중 오류:", err);
-          return res.status(500).json({ message: "로그아웃 실패" });
+          // 세션 파기 중 오류 발생 시
+          console.error("세션 파기 오류:", err);
+          return res.status(500).send("로그아웃 중 오류가 발생했습니다.");
+        } else {
+          console.log("sdfsdfsdfsd");
+
+          res.clearCookie("connect.sid", {
+            path: "/", // express-session의 기본 쿠키 경로
+            httpOnly: true,
+            secure: false, // 배포 환경에서는 true (https만 될지)
+            sameSite: "lax",
+          });
+          res
+            .status(200)
+            .send(
+              "성공적으로 로그아웃되었으며 세션 쿠키가 삭제 요청되었습니다."
+            );
         }
-        // 쿠키 제거
-        res.clearCookie("connect.sid", {
-          httpOnly: true,
-          secure: false,
-          sameSite: "lax",
-          path: "/",
-        }); // 기본 세션 쿠키 이름
-        return res.status(200).json({ message: "로그아웃 성공" });
       });
     } else {
-      return res.status(400).json({ message: "로그인된 사용자가 없습니다." });
+      // 이미 세션이 없는 경우
+      res.status(200).send("활성화된 세션이 없습니다.");
     }
   } catch (error) {
     console.error("로그아웃 오류:", error);

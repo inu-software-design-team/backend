@@ -87,6 +87,7 @@ app.use(
       autoRemove: "native", // TTL 인덱스를 사용하여 자동 삭제 (MongoDB 기능)
     }),
     cookie: {
+      path: "/",
       httpOnly: true,
       secure: false, // 배포 환경에서는 true (https만 될지)
       sameSite: "lax",
