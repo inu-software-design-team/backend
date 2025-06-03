@@ -47,7 +47,7 @@ exports.fetchInformation = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "학생을 찾을 수 없습니다." });
     }
 
-    if (!parent) {
+    if (!parents) {
       return res.status(404).json({ message: "학부모를 찾을 수 없습니다." });
     }
 
