@@ -4,6 +4,7 @@ const Student = require("../models/Student");
 const Class = require("../models/Class");
 const mongoose = require("mongoose");
 const Sentry = require("@sentry/node");
+const transporter = require("../config/mailConfig");
 
 exports.checkAllFeedback = asyncHandler(async (req, res) => {
   try {
@@ -135,6 +136,26 @@ exports.modifyFeedback = asyncHandler(async (req, res) => {
     const date = new Date().toISOString();
     feedback.date = date; // 현재 날짜로 수정
     await feedback.save();
+
+    const toBeEmail = await User.find({
+      linked: student_id,
+    }).select("email");
+
+    const _student = await Student.findOne({
+      student_id: student_id,
+    }).select("name -_id");
+
+    const mailOption = {
+      // 해당 선생 이메일로 보내고 싶을 경우
+      // from: await User.findOne({ linked: req.session.user.linked[0] }).select("email");
+      to: toBeEmail,
+      subject: `${_student.name}학생의 ${category} 관련 피드백 내역 수정이 완료되었습니다.`,
+      text: `안녕하세요, ${_student.name} 학생, ${category} 관련 피드백 내역이 수정되었습니다.`,
+      html: `<p>안녕하세요, ${_student.name} 학생 </p><p>${category} 관련 피드백 내역이 수정되었습니다.</p>`,
+    };
+
+    await transporter.sendMail(mailOption);
+
     // 피드백 수정 성공
     return res.json({ message: "피드백 수정 성공", updatedFeedback: feedback });
   } catch (error) {
@@ -267,6 +288,25 @@ exports.createFeedback = asyncHandler(async (req, res) => {
     });
     // 피드백 저장
     await newFeedback.save();
+
+    const toBeEmail = await User.find({
+      linked: student_id,
+    }).select("email");
+
+    const _student = await Student.findOne({
+      student_id: student_id,
+    }).select("name -_id");
+
+    const mailOption = {
+      // 해당 선생 이메일로 보내고 싶을 경우
+      // from: await User.findOne({ linked: req.session.user.linked[0] }).select("email");
+      to: toBeEmail,
+      subject: `${_student.name}학생의 ${category} 관련 새로운 피드백 내역 작성이 완료되었습니다.`,
+      text: `안녕하세요, ${_student.name} 학생, ${category} 관련 새로운 피드백 내역이 작성되었습니다.`,
+      html: `<p>안녕하세요, ${_student.name} 학생 </p><p>${category} 관련 새로운 피드백 내역이 작성되었습니다.</p>`,
+    };
+
+    await transporter.sendMail(mailOption);
 
     return res.status(201).json({
       message: "피드백 생성 성공",

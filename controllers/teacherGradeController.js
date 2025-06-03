@@ -526,6 +526,42 @@ exports.createGrade = asyncHandler(async (req, res) => {
       _grade.markModified("average");
       await _grade.save();
 
+      // 성적 수정 메일 전송
+      // 성적이 수정된 학생 유저/해당 학생의 학부모의 메일 조회
+      const toBeEmail = await User.find({
+        linked: student_id,
+      }).select("email");
+
+      const _student = await Student.findOne({
+        student_id: student_id,
+      }).select("name -_id");
+
+      const semesterNumber = semester === "firstSemester" ? 1 : 2;
+      const koreanterm = term === "midterm" ? "중간" : "기말";
+      const koreanSubject =
+        subject === "korean"
+          ? "국어"
+          : subject === "math"
+          ? "수학"
+          : subject === "english"
+          ? "영어"
+          : subject === "society"
+          ? "사회"
+          : subject === "science"
+          ? "과학"
+          : null;
+
+      const mailOption = {
+        // 해당 선생 이메일로 보내고 싶을 경우
+        // from: await User.findOne({ linked: req.session.user.linked[0] }).select("email");
+        to: toBeEmail,
+        subject: `${_student.name}학생의 ${year}년도 ${semesterNumber}학기 ${koreanterm} ${koreanSubject} 성적 수정이 완료되었습니다.`,
+        text: `안녕하세요, ${_student.name} 학생, ${year}년도 ${semesterNumber}학기 ${koreanterm} ${koreanSubject} 성적이 수정되었습니다.`,
+        html: `<p>안녕하세요, ${_student.name} 학생 </p><p>${year}년도 ${semesterNumber}학기 ${koreanterm} ${koreanSubject} 성적이 수정되었습니다.</p>`,
+      };
+
+      await transporter.sendMail(mailOption);
+
       return res.status(200).json({
         message: "성적 생성이 완료되었습니다.",
         data: _grade,

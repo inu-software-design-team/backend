@@ -245,6 +245,25 @@ exports.modifyCounseling = asyncHandler(async (req, res) => {
 
     await theCounseling.save();
 
+    const toBeEmail = await User.find({
+      linked: student_id,
+    }).select("email");
+
+    const _student = await Student.findOne({
+      student_id: student_id,
+    }).select("name -_id");
+
+    const mailOption = {
+      // 해당 선생 이메일로 보내고 싶을 경우
+      // from: await User.findOne({ linked: req.session.user.linked[0] }).select("email");
+      to: toBeEmail,
+      subject: `${_student.name}학생의 ${topic} 관련 상담 내역 수정이 완료되었습니다.`,
+      text: `안녕하세요, ${_student.name} 학생, ${topic} 관련 상담 내역이 수정되었습니다.`,
+      html: `<p>안녕하세요, ${_student.name} 학생 </p><p>${topic} 관련 상담 내역이 수정되었습니다.</p>`,
+    };
+
+    await transporter.sendMail(mailOption);
+
     // 상담 내역 수정 성공
     res.status(200).json({
       message: "상담 내역 수정 성공",
