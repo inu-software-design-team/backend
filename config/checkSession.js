@@ -28,7 +28,7 @@ module.exports = function checkSession(req, res, next) {
       return res.status(400).json({ message: "세션이 만료됨" });
     }
   }
-
+  /*
   const method = req.method.toUpperCase();
   if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
     const csrfToken = req.headers["x-csrf-token"];
@@ -43,6 +43,7 @@ module.exports = function checkSession(req, res, next) {
         .json({ message: "CSRF 토큰이 유효하지 않습니다." });
     }
   }
+  */
 
   next();
 };

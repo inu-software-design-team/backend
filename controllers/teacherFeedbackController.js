@@ -5,6 +5,7 @@ const Class = require("../models/Class");
 const mongoose = require("mongoose");
 const Sentry = require("@sentry/node");
 const transporter = require("../config/mailConfig");
+const User = require("../models/User");
 
 exports.checkAllFeedback = asyncHandler(async (req, res) => {
   try {
