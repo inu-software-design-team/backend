@@ -96,7 +96,7 @@ exports.createCounseling = asyncHandler(async (req, res) => {
     const next_content = req.body.next_content;
 
     // 필요한 데이터가 제공되지 않은 경우
-    if (!topic || !title || !content || !next_date || next_content) {
+    if (!topic || !title || !content || !next_date || !next_content) {
       return res.status(400).json({
         message:
           "topic, title, content, next_date, next_content를 모두 제공해야 합니다.",
